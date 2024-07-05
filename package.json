@@ -1,0 +1,11 @@
+{
+  "name": "house-bot",
+  "version": "1.0.0",
+  "description": "This is a bot used for my house! It takes care of rent, chores, events, and notifications!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
