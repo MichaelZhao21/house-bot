@@ -18,5 +18,7 @@ Create a [firebase project](https://firebase.google.com/docs/web/setup#create-fi
 }
 ```
 
+Create a Discord app/bot, generate a token, and add a field "discordToken" with that generated token as the value.
+
 ## Execution
 
