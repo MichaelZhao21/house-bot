@@ -26,7 +26,7 @@ module.exports = {
         const user = interaction.options.getUser("user");
 
         // Make sure person exists
-        const docRef = doc(db, "people", String(user));
+        const docRef = doc(db, "people", user.id);
         const person = await getDoc(docRef);
         if (!person.exists()) {
             interaction.reply({

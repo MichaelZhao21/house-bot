@@ -28,7 +28,7 @@ module.exports = {
         const user = interaction.options.getUser("user");
         const name = interaction.options.getString("name");
 
-        await setDoc(doc(db, "people", String(user)), {
+        await setDoc(doc(db, "people", user.id), {
             name,
             username: user.username,
         });

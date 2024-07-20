@@ -14,6 +14,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "croner": "^8.1.0",
+    "dayjs": "^1.11.12",
     "discord.js": "^14.15.3",
     "firebase": "^10.12.3"
   },
