@@ -3,7 +3,7 @@ const { Firestore, setDoc, doc } = require("firebase/firestore");
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("addperson")
+        .setName("admin-addperson")
         .setDescription("Adds a person to the household")
         .addUserOption((option) =>
             option

@@ -6,7 +6,7 @@ const { Firestore, setDoc, doc } = require("firebase/firestore");
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("setnotifchannel")
+        .setName("admin-setnotifchannel")
         .setDescription("Sets the channel for the bot to use for notifications")
         .addChannelOption((option) =>
             option
@@ -24,8 +24,8 @@ module.exports = {
     async execute(interaction, db, settings) {
         const channel = interaction.options.getChannel("channel");
 
-        settings["notif-channel"] = channel.id;
-        settings["guild"] = channel.guild.id;
+        settings.notifChannel = channel.id;
+        settings.guild = channel.guild.id;
         await setDoc(doc(db, "settings", "0"), settings);
 
         interaction.reply(`Updated notification channel to ${channel}`);

@@ -8,7 +8,7 @@ const {
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("deleteperson")
+        .setName("admin-deleteperson")
         .setDescription("Removes a person from the household")
         .addUserOption((option) =>
             option

@@ -17,7 +17,7 @@ dayjs.extend(advancedFormat);
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("showallnotifs")
+        .setName("notifs-showallnotifs")
         .setDescription(
             "Shows all notifications that are currently set for the future"
         ),

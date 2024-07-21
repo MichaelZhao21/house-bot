@@ -22,9 +22,12 @@ async function main() {
         settings = settingsRef.data();
     } else {
         settings = {
-            "notif-channel": null,
+            notifChannel: null,
             guild: null,
             notifs: [],
+            utilities: 0,
+            rentStart: 0,
+            rentEnd: 0,
         };
         await setDoc(settingsDoc, settings);
     }
@@ -41,13 +44,21 @@ async function main() {
             await setDoc(doc(db, "settings", "0"), settings);
 
             // Set up notif cron tasks
-            const channel = await guild.channels.fetch(settings["notif-channel"]);
+            const channel = await guild.channels.fetch(
+                settings.notifChannel
+            );
             settings.notifs.forEach((notif) =>
-                startTimer(channel, notif.time, notif.type, notif.message, notif.user)
+                startTimer(
+                    channel,
+                    notif.time,
+                    notif.type,
+                    notif.message,
+                    notif.user
+                )
             );
         }
 
-		console.log("Notification system ready!");
+        console.log("Notification system ready!");
     });
 
     // Log into Discord

@@ -50,4 +50,13 @@ module.exports = {
             dayjs(notif.time).isAfter(dayjs())
         );
     },
+
+    /**
+     * Starts timers for all rent reminders
+     *  
+     * @param {Object[]} rents List of rent objects
+     */
+    loadRentNotifs: (rents) => {
+        // Iterate through all rents and set notification for the month
+    }
 };

@@ -16,7 +16,7 @@ dayjs.extend(objectSupport);
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("remindme")
+        .setName("notifs-remindme")
         .setDescription(
             "Reminds you at a specific time. Any fields not set will default to the current datetime."
         )
@@ -93,7 +93,7 @@ module.exports = {
         // Start the timer
         try {
             const channel = interaction.guild.channels.cache.get(
-                settings["notif-channel"]
+                settings.notifChannel
             );
             startTimer(
                 channel,
