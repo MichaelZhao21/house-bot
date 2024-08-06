@@ -1,4 +1,10 @@
-const { Client, Collection, Events, GatewayIntentBits } = require("discord.js");
+const {
+    Client,
+    Collection,
+    Events,
+    GatewayIntentBits,
+    ActivityType,
+} = require("discord.js");
 const config = require("./config.json");
 const { initializeApp } = require("firebase/app");
 const { getFirestore, doc, getDoc, setDoc } = require("firebase/firestore");
@@ -44,9 +50,7 @@ async function main() {
             await setDoc(doc(db, "settings", "0"), settings);
 
             // Set up notif cron tasks
-            const channel = await guild.channels.fetch(
-                settings.notifChannel
-            );
+            const channel = await guild.channels.fetch(settings.notifChannel);
             settings.notifs.forEach((notif) =>
                 startTimer(
                     channel,
@@ -59,6 +63,11 @@ async function main() {
         }
 
         console.log("Notification system ready!");
+
+        // Set presence message
+        client.user.setPresence({
+            activities: [{ name: "/house-help", type: ActivityType.Listening }],
+        });
     });
 
     // Log into Discord
