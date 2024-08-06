@@ -5,7 +5,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("rent-setutilities")
         .setDescription(
-            "Sets the monthly total cost of utilities (will be split in the rent calculation for each month)"
+            "Sets the cost of utilities per person per month (eg. $500/mo for 5 people = 100)"
         )
         .addNumberOption((option) =>
             option

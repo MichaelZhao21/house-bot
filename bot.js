@@ -10,7 +10,8 @@ const { initializeApp } = require("firebase/app");
 const { getFirestore, doc, getDoc, setDoc } = require("firebase/firestore");
 const path = require("node:path");
 const fs = require("fs");
-const { cleanNotifs, startTimer } = require("./reminders");
+const { cleanNotifs, startTimer, startRentTimer } = require("./reminders");
+const dayjs = require("dayjs");
 
 async function main() {
     // Create a new client instance
@@ -60,6 +61,27 @@ async function main() {
                     notif.user
                 )
             );
+
+            // Calculate next rent notif interval
+            const now = dayjs();
+            let month = now.month();
+            let year = now.year();
+            const day = now.date();
+
+            // Start rent timer
+            if (day < 25) {
+                startRentTimer(db, month, year, true, settings, channel);
+            } else if (day < 28) {
+                startRentTimer(db, month, year, false, settings, channel);
+            } else {
+                if (month === 11) {
+                    month = 0;
+                    year++;
+                } else {
+                    month++;
+                }
+                startRentTimer(db, month, year, true, settings, channel);
+            }
         }
 
         console.log("Notification system ready!");

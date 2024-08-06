@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
 const { Firestore, setDoc, doc, getDoc } = require("firebase/firestore");
+const dayjs = require("dayjs");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -22,8 +23,9 @@ module.exports = {
      * Execution script
      * @param {CommandInteraction} interaction
      * @param {Firestore} db
+     * @param {Object} settings
      */
-    async execute(interaction, db) {
+    async execute(interaction, db, settings) {
         const user = interaction.options.getUser("user");
         const rent = interaction.options.getNumber("rent");
 
@@ -34,8 +36,11 @@ module.exports = {
             return;
         }
 
+        const rentLength = dayjs(settings.rentEnd).diff(dayjs(settings.rentStart), 'months') + 1;
+
         await setDoc(doc(db, "rent", user.id), {
             rent,
+            paid: Array(rentLength).fill(0),
             reminders: [],
         });
         interaction.reply({
