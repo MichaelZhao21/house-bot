@@ -38,7 +38,7 @@ const route = isGuild
     try {
         console.log(
             `Started refreshing ${commands.length} ${
-                isGuild && "guild "
+                isGuild ? "guild " : ""
             }application (/) commands.`
         );
 
@@ -47,7 +47,7 @@ const route = isGuild
 
         console.log(
             `Successfully reloaded ${data.length} ${
-                isGuild && "guild "
+                isGuild ? "guild " : ""
             }application (/) commands.`
         );
     } catch (error) {

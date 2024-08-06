@@ -20,21 +20,29 @@ module.exports = {
         const commands = [
             {
                 name: "/house-help",
-                value: "Shows this help dialog"
+                value: "Shows this help dialog",
             },
             {
                 name: "/admin-showpeople",
-                value: "Shows the list of people in the house"
+                value: "Shows the list of people in the house",
             },
             {
                 name: "/notifs-showallnotifs",
-                value: "Shows all notifications set for individual people"
+                value: "Shows all notifications set for individual people",
             },
             {
                 name: "/notifs-remindme",
-                value: "Send a reminder to yourself at a specified date/time"
-            }
-        ]
+                value: "Send a reminder to yourself at a specified date/time",
+            },
+            {
+                name: "/chores-showchores",
+                value: "Shows the list of chores for the current week",
+            },
+            {
+                name: "/chores-finishchore",
+                value: "Set a chore to complete",
+            },
+        ];
         // Create embed
         const embed = new EmbedBuilder()
             .setColor(0xe0b5f5)
