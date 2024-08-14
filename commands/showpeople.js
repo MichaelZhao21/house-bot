@@ -32,7 +32,7 @@ module.exports = {
             .setThumbnail(
                 "https://upload.wikimedia.org/wikipedia/en/1/14/HouseCastSeason1.jpg"
             )
-            .addFields(users.map((u) => ({ name: u.name, value: u.username })))
+            .addFields(users.map((u) => ({ name: u.name, value: u.username.replace("_", "\\_") })))
             .setTimestamp();
 
         interaction.reply({ embeds: [embed] });
