@@ -1,7 +1,4 @@
-const {
-    SlashCommandBuilder,
-    CommandInteraction,
-} = require("discord.js");
+const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
 const { Firestore, setDoc, doc } = require("firebase/firestore");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
@@ -25,6 +22,14 @@ module.exports = {
                 .setDescription("Unique ID used to identify the event")
                 .setRequired(true)
         )
+        .addStringOption((option) =>
+            option.setName("title").setDescription("Title of the event")
+        )
+        .addStringOption((option) =>
+            option
+                .setName("subtitle")
+                .setDescription("Description of the event")
+        )
         .addIntegerOption((option) =>
             option.setName("year").setDescription("Year (YYYY)")
         )
@@ -39,14 +44,6 @@ module.exports = {
         )
         .addIntegerOption((option) =>
             option.setName("minute").setDescription("Minute (mm)")
-        )
-        .addStringOption((option) =>
-            option.setName("title").setDescription("Title of the event")
-        )
-        .addStringOption((option) =>
-            option
-                .setName("subtitle")
-                .setDescription("Description of the event")
         ),
 
     /**
@@ -106,7 +103,7 @@ module.exports = {
             const channel = interaction.guild.channels.cache.get(
                 settings.notifChannel
             );
-            setEventAlarm(newEvent, channel);
+            setEventAlarm({ id, ...newEvent }, channel);
         } catch (e) {
             interaction.reply(e);
             return;
@@ -114,7 +111,7 @@ module.exports = {
 
         // Tell the user
         interaction.reply(
-            `Reminder has been set to go off <t:${futureStr}:R>!`
+            `Event **${title}** (${id}) will happen <t:${futureStr}:R>!`
         );
     },
 };

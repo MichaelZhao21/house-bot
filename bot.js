@@ -10,8 +10,9 @@ const { initializeApp } = require("firebase/app");
 const { getFirestore, doc, getDoc, setDoc } = require("firebase/firestore");
 const path = require("node:path");
 const fs = require("fs");
-const { cleanNotifs, startRentTimer, setAlarm } = require("./src/notifications");
+const { startRentTimer, setAlarm } = require("./src/notifications");
 const dayjs = require("dayjs");
+const { cleanAndGetEvents, setEventAlarm } = require("./src/events");
 
 async function main() {
     // Create a new client instance
@@ -44,23 +45,14 @@ async function main() {
         console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 
         // Then clean up and set notifications
-        const guild = await client.guilds.fetch(settings["guild"]);
+        const guild = await client.guilds.fetch(settings.guild);
         if (guild) {
-            // Clean up notifs
-            cleanNotifs(settings);
-            await setDoc(doc(db, "settings", "0"), settings);
-
-            // Set up notif cron tasks
+            // Get the main notif channel
             const channel = await guild.channels.fetch(settings.notifChannel);
-            settings.notifs.forEach((notif) =>
-                setAlarm(
-                    channel,
-                    notif.time,
-                    notif.type,
-                    notif.message,
-                    notif.user
-                )
-            );
+
+            // Start the events timers
+            const events = await cleanAndGetEvents(db);
+            events.forEach((event) => setEventAlarm(event, channel));
 
             // Calculate next rent notif interval
             const now = dayjs();

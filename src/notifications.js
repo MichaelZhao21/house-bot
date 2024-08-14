@@ -10,134 +10,101 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(objectSupport);
 
+// Global list to store all alarms
 const alarmList = [];
 
 /**
- * @param {Object} channel The channel to send messages in
- * @param {string} user The user to ping (their ID)
- * @param {number[]} times UNIX timestamp
- * @param {Object[]} messages Message object list
- * @param {Function} func Function to run on each iteration
- * @param {number} iter Index of times array to use
+ * Creates a message object.
+ *
+ * @param {string} title Title of the notification
+ * @param {string} subtitle Subtitle of the notification
+ * @param {number} color Color of the embed
+ * @param {string} id ID of the message
  */
-function repeatTimer(channel, user, times, messages, func, iter) {
-    // Get message
-    const message = messages[iter];
+function newMessage(title, subtitle, color, id) {
+    return { title, subtitle, color, id };
+}
 
+/**
+ * Sends a notification into a discord channel with the given message.
+ * 
+ * @param {Object} channel Discord channel to send message in
+ * @param {string} user User ID or "everyone" to ping
+ * @param {Object} message Message object
+ */
+async function sendNotif(channel, user, message) {
+    // Exception to ping everyone
+    const userOut = user === "everyone" ? "@everyone" : `<@${user}>`;
+
+    // Create embed
+    const embed = new EmbedBuilder()
+        .setColor(message.color)
+        .setTitle(message.title)
+        .setDescription(message.subtitle)
+
+    channel.send({
+        content: `${userOut} ${message.title}`,
+        embeds: [embed],
+    });
+}
+
+/**
+ * Starts a cron job to notify a user about something
+ *
+ * @param {Object} channel Discord channel to send message in
+ * @param {string} user User ID or "everyone" to ping
+ * @param {number} time UNIX timestamp
+ * @param {Object} message Message object
+ */
+function setAlarm(channel, user, time, message) {
+    // Define cron task for a certain time
+    const task = Cron(
+        dayjs(time).tz("America/Chicago").toISOString(),
+        {
+            timezone: "America/Chicago",
+            name: message.id,
+        },
+        sendNotif.bind(this, channel, user, message)
+    );
+    alarmList.push(task);
+}
+
+/**
+ * Creates a repeating task that will happen at each given timestamp until
+ * no more timestamps are left. Note that if timestamps are not in order
+ * this will break as it will not be able to run a task in the past.
+ *
+ * @param {number[]} times UNIX timestamp
+ * @param {Function} func Function to run on each iteration
+ * @param {number} iter Current iteration, used to get times[iter] and passed into function
+ */
+function setRepeatTask(times, func, iter) {
     // Define cron task for a certain time
     Cron(
         dayjs(times[iter]).tz("America/Chicago").toISOString(),
         { timezone: "America/Chicago" },
         async () => {
-            // Create embed
-            const embed = new EmbedBuilder()
-                .setColor(0xe0b5f5)
-                .setTitle(`Notif (${message.title})`)
-                .setDescription(message.subtitle)
-                .setTimestamp();
-
-            channel.send({
-                content: `<@${user}> ${message.title}`,
-                embeds: [embed],
-            });
-
             // Call function
-            await func();
+            await func(iter);
 
             // Stop if iterations are up
-            if (times.length >= iter + 1) {
+            if (iter + 1 >= times.length) {
                 return;
             }
 
+            console.log("CONTINUING!!!")
+
             // Otherwise, we keep going!
-            repeatTimer(channel, user, times, message, func, iter + 1);
+            setRepeatTask(times, func, iter + 1);
         }
     );
 }
 
 module.exports = {
-    /**
-     * Creates a message object
-     *
-     * @param {string} title Title of the notification
-     * @param {string} subtitle Subtitle of the notification
-     * @param {number} color Color of the embed
-     */
-    newMessage: function newMessage(title, subtitle, color) {
-        return { title, subtitle, color };
-    },
-
-    /**
-     * Starts a cron job to notify a user about something
-     *
-     * @param {Object} channel The channel to send messages in
-     * @param {string} user The user to ping (their ID) or "everyone" to ping `@everyone`
-     * @param {number} time UNIX timestamp
-     * @param {Object} message Message object
-     */
-    setAlarm: function setAlarm(channel, user, time, message) {
-        // Make sure notif channel is defined
-        if (!channel) {
-            throw "Invalid notification channel! Please set a notification channel with /setnotifchannel";
-        }
-
-        // Exception to ping everyone
-        const userOut = user === "everyone" ? "@everyone" : `<@${user}>`;
-
-        // Define cron task for a certain time
-        const task = Cron(
-            dayjs(time).tz("America/Chicago").toISOString(),
-            { timezone: "America/Chicago" },
-            () => {
-                // Create embed
-                const embed = new EmbedBuilder()
-                    .setColor(message.color)
-                    .setTitle(`Notif (${message.title})`)
-                    .setDescription(message.subtitle)
-                    .setTimestamp();
-
-                channel.send({ content: userOut, embeds: [embed] });
-            }
-        );
-        alarmList.push(task);
-    },
-
-    /**
-     * Starts a cron job to notify a user about something and
-     * will run a function at the end, then start another cron
-     * job for the next notification.
-     *
-     * @param {Object} channel The channel to send messages in
-     * @param {string} user The user to ping (their ID)
-     * @param {number[]} times UNIX timestamp
-     * @param {Object} message Message object
-     * @param {Function} func Function to run on each iteration
-     */
-    startRepeatedTimer: function startRepeatedTimer(
-        channel,
-        user,
-        times,
-        message,
-        func
-    ) {
-        // Make sure notif channel is defined
-        if (!channel) {
-            throw "Invalid notification channel! Please set a notification channel with /setnotifchannel";
-        }
-
-        repeatTimer(channel, user, times, message, func, 0);
-    },
-
-    /**
-     * Cleans up the pending notifications list from settings
-     *
-     * @param {Object} settings The settings object
-     */
-    cleanNotifs: (settings) => {
-        settings.notifs = settings.notifs.filter((notif) =>
-            dayjs(notif.time).isAfter(dayjs())
-        );
-    },
+    newMessage,
+    sendNotif,
+    setAlarm,
+    setRepeatTask,
 
     // TODO: Refactor into rent.js for rent calculations and stuff
 

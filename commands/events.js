@@ -39,9 +39,9 @@ module.exports = {
             .setColor(0xd67ce6)
             .addFields(
                 events.map((e) => ({
-                    name: `${e.name} (${e.id})`,
+                    name: `${e.title} (${e.id})`,
                     value: dayjs(e.time)
-                        .tz("America/Chicago", true)
+                        .tz("America/Chicago")
                         .format("MMM Do, YYYY @ h:mm a z"),
                 }))
             );
