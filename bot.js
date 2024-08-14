@@ -10,7 +10,7 @@ const { initializeApp } = require("firebase/app");
 const { getFirestore, doc, getDoc, setDoc } = require("firebase/firestore");
 const path = require("node:path");
 const fs = require("fs");
-const { cleanNotifs, startTimer, startRentTimer } = require("./reminders");
+const { cleanNotifs, startRentTimer, setAlarm } = require("./src/notifications");
 const dayjs = require("dayjs");
 
 async function main() {
@@ -53,7 +53,7 @@ async function main() {
             // Set up notif cron tasks
             const channel = await guild.channels.fetch(settings.notifChannel);
             settings.notifs.forEach((notif) =>
-                startTimer(
+                setAlarm(
                     channel,
                     notif.time,
                     notif.type,
@@ -88,7 +88,7 @@ async function main() {
 
         // Set presence message
         client.user.setPresence({
-            activities: [{ name: "/house-help", type: ActivityType.Listening }],
+            activities: [{ name: "/help", type: ActivityType.Listening }],
         });
     });
 

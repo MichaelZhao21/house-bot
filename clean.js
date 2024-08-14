@@ -16,7 +16,7 @@ rest.put(route, { body: [] })
     .then(() =>
         console.log(
             `Successfully deleted all ${
-                isGuild && "guild "
+                isGuild ? "guild " : ""
             }application commands`
         )
     )

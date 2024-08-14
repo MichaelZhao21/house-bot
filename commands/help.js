@@ -6,7 +6,7 @@ const {
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("house-help")
+        .setName("help")
         .setDescription(
             "Shows a list of all public commands avaliable for the bot!"
         ),
@@ -19,34 +19,27 @@ module.exports = {
         // List of commands
         const commands = [
             {
-                name: "/house-help",
+                name: "/help",
                 value: "Shows this help dialog",
             },
             {
-                name: "/admin-showpeople",
+                name: "/people",
                 value: "Shows the list of people in the house",
             },
             {
-                name: "/notifs-showallnotifs",
-                value: "Shows all notifications set for individual people",
+                name: "/events",
+                value: "Shows all future events",
             },
             {
-                name: "/notifs-remindme",
-                value: "Send a reminder to yourself at a specified date/time",
-            },
-            {
-                name: "/chores-showchores",
-                value: "Shows the list of chores for the current week",
-            },
-            {
-                name: "/chores-finishchore",
-                value: "Set a chore to complete",
+                name: "/addevent",
+                value: "Add an event, will remind people 1 hr before, 10 mins before, and on the dot",
             },
         ];
         // Create embed
         const embed = new EmbedBuilder()
             .setColor(0xe0b5f5)
             .setTitle("Commands for House Bot!")
+            .setDescription("These are all the commands that can be used. Admin commands are not listed and prefixed with 'admin'.")
             .setThumbnail(
                 "https://as1.ftcdn.net/v2/jpg/05/74/72/86/1000_F_574728684_voyDBkCWq2cKEd3MDoNE0nQLrWYFVxFh.jpg"
             )

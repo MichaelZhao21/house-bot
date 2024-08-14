@@ -7,7 +7,7 @@ const { Firestore, getDocs, collection } = require("firebase/firestore");
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("admin-showpeople")
+        .setName("people")
         .setDescription("Shows a list of everyone in the house"),
 
     /**

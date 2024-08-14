@@ -22,7 +22,6 @@ module.exports = {
      * @param {Firestore} db
      */
     async execute(interaction, db) {
-        // Add person to the database
         const user = interaction.options.getUser("user");
 
         // Make sure person exists

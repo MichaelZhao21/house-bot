@@ -7,7 +7,7 @@ dayjs.extend(objectSupport);
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("rent-payrent")
+        .setName("admin-payrent")
         .setDescription("Sets the amount of rent a person paid for the month")
         .addUserOption((option) =>
             option

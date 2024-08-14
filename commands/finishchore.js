@@ -4,13 +4,20 @@ const { Firestore, setDoc, doc, getDoc } = require("firebase/firestore");
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("chores-finishchore")
-        .setDescription("Sets a chore to done")
+        .setName("finish")
+        .setDescription("Marks a chore as done/completed")
         .addStringOption((option) =>
             option
                 .setName("name")
                 .setDescription("Name of the chore that was finished")
                 .setRequired(true)
+        )
+        .addBooleanOption((option) =>
+            option
+                .setName("finished")
+                .setDescription(
+                    "Can set to false if you want to mark a chore as UNfinished"
+                )
         ),
 
     /**
@@ -21,7 +28,13 @@ module.exports = {
     async execute(interaction, db) {
         const name = interaction.options.getString("name");
 
+        // Get alternative option if defined
+        const fOp = interaction.options.getBoolean("finished");
+        const finished = fOp === null || fOp === undefined ? true : fOp;
+
         const date = dayjs().day(0).format("M-D-YYYY");
+
+        // TODO: MODIFY AND COMPLTE THE BOTTOM SECTION FOR CHORES
 
         // Get the list of this week's chores
         const weekChoresRes = await getDoc(doc(db, "chorelist", date));
@@ -39,14 +52,16 @@ module.exports = {
         if (!weekDocRes.exists()) {
             weekDoc = {};
             Object.keys(weekChores).forEach((k) => (weekDoc[k] = false));
-        }
-        else {
+        } else {
             weekDoc = weekDocRes.data();
         }
 
         // Make sure the chore exists
         if (!weekChores.hasOwnProperty(name)) {
-            interaction.reply("Invalid chore name! Expected one of " + Object.keys(weekChores).toString());
+            interaction.reply(
+                "Invalid chore name! Expected one of " +
+                    Object.keys(weekChores).toString()
+            );
             return;
         }
 

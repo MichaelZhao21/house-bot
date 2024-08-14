@@ -4,7 +4,7 @@ const dayjs = require("dayjs");
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("rent-setrent")
+        .setName("admin-setrent")
         .setDescription("Sets the rent of a person in the household")
         .addUserOption((option) =>
             option
@@ -35,6 +35,8 @@ module.exports = {
             interaction.reply("Cannot set rent of someone who is not in the house!");
             return;
         }
+
+        // TODO: Store this info on user doc and we don't need rent length anymore!!
 
         const rentLength = dayjs(settings.rentEnd).diff(dayjs(settings.rentStart), 'months') + 1;
 

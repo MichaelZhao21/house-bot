@@ -3,14 +3,14 @@ const { Firestore, setDoc, doc } = require("firebase/firestore");
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("admin-setutilities")
+        .setName("admin-settrackrent")
         .setDescription(
-            "Sets the cost of utilities per person per month (eg. $500/mo for 5 people = 100)"
+            "Sets whether or not to track rent (notifications + strikes)"
         )
-        .addNumberOption((option) =>
+        .addBooleanOption((option) =>
             option
-                .setName("utilities")
-                .setDescription("Monthly utilities cost")
+                .setName("checkbox")
+                .setDescription("True if tracking rent")
                 .setRequired(true)
         ),
 
@@ -21,11 +21,11 @@ module.exports = {
      * @param {Object} settings
      */
     async execute(interaction, db, settings) {
-        settings.utilities = interaction.options.getNumber("utilities");
+        settings.tracking = interaction.options.getBoolean("checkbox");
         setDoc(doc(db, "settings", "0"), settings);
 
         interaction.reply({
-            content: `Utilities set at $${settings.utilities}`,
+            content: `Rent tracking is **${settings.tracking ? "ENABLED" : "DISABLED"}**`,
         });
     },
 };

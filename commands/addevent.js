@@ -1,14 +1,13 @@
 const {
     SlashCommandBuilder,
     CommandInteraction,
-    EmbedBuilder,
 } = require("discord.js");
 const { Firestore, setDoc, doc } = require("firebase/firestore");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
 const objectSupport = require("dayjs/plugin/objectSupport");
-const { startTimer } = require("../reminders");
+const { setEventAlarm } = require("../src/events");
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -16,9 +15,15 @@ dayjs.extend(objectSupport);
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("notifs-remindme")
+        .setName("addevent")
         .setDescription(
-            "Reminds you at a specific time. Any fields not set will default to the current datetime."
+            "Creates a new event. Any field not set will default to the current (eg. this month)"
+        )
+        .addStringOption((option) =>
+            option
+                .setName("id")
+                .setDescription("Unique ID used to identify the event")
+                .setRequired(true)
         )
         .addIntegerOption((option) =>
             option.setName("year").setDescription("Year (YYYY)")
@@ -35,11 +40,13 @@ module.exports = {
         .addIntegerOption((option) =>
             option.setName("minute").setDescription("Minute (mm)")
         )
-        .addIntegerOption((option) =>
-            option.setName("second").setDescription("Second (ss)")
+        .addStringOption((option) =>
+            option.setName("title").setDescription("Title of the event")
         )
         .addStringOption((option) =>
-            option.setName("message").setDescription("Message for the reminder")
+            option
+                .setName("subtitle")
+                .setDescription("Description of the event")
         ),
 
     /**
@@ -53,6 +60,7 @@ module.exports = {
         const now = dayjs().tz("America/Chicago");
 
         // Get fields
+        const id = interaction.options.getString("id");
         const year = interaction.options.getInteger("year") ?? now.get("year");
         const month =
             interaction.options.getInteger("month") ?? now.get("month") + 1;
@@ -60,9 +68,11 @@ module.exports = {
         const hour = interaction.options.getInteger("hour") ?? now.get("hour");
         const minute =
             interaction.options.getInteger("minute") ?? now.get("minute");
-        const second =
-            interaction.options.getInteger("second") ?? now.get("second");
-        const message = interaction.options.getString("message") ?? "[no message]";
+        const second = 0;
+        const title =
+            interaction.options.getString("title") ?? "[unnamed event]";
+        const subtitle =
+            interaction.options.getString("subtitle") ?? "[no description]";
 
         // Calculate time and make sure it's valid
         const future = dayjs({
@@ -81,27 +91,22 @@ module.exports = {
             return;
         }
 
-        // Save the time
-        settings.notifs.push({
-            type: "Remind me",
+        // Create event object
+        const newEvent = {
+            title,
+            subtitle,
             time: future.utc().valueOf(),
-            user: interaction.user.id,
-            message,
-        });
-        await setDoc(doc(db, "settings", "0"), settings);
+        };
 
-        // Start the timer
+        // Add the event to the database
+        await setDoc(doc(db, "events", id), newEvent);
+
+        // Set the alarm for the event
         try {
             const channel = interaction.guild.channels.cache.get(
                 settings.notifChannel
             );
-            startTimer(
-                channel,
-                future.utc().valueOf(),
-                "Remind me",
-                message,
-                interaction.user.id
-            );
+            setEventAlarm(newEvent, channel);
         } catch (e) {
             interaction.reply(e);
             return;
