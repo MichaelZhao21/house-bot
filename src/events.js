@@ -83,7 +83,7 @@ function setEventAlarm(event, channel) {
     };
 
     // Set the repeating task!
-    setRepeatTask(times, eventAlarm, 0);
+    setRepeatTask(times, eventAlarm, event.id + "-repeat", 0);
 }
 
 module.exports = {

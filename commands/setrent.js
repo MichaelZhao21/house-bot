@@ -30,23 +30,22 @@ module.exports = {
         const rent = interaction.options.getNumber("rent");
 
         // Get the person from the database
-        const person = await getDoc(doc(db, "people", user.id));
-        if (!person.exists()) {
-            interaction.reply("Cannot set rent of someone who is not in the house!");
+        const personRef = await getDoc(doc(db, "people", user.id));
+        if (!personRef.exists()) {
+            interaction.reply(
+                "Cannot set rent of someone who is not in the house!"
+            );
             return;
         }
 
-        // TODO: Store this info on user doc and we don't need rent length anymore!!
+        const person = personRef.data();
+        person.rent = rent;
+        await setDoc(personRef.ref, person);
 
-        const rentLength = dayjs(settings.rentEnd).diff(dayjs(settings.rentStart), 'months') + 1;
-
-        await setDoc(doc(db, "rent", user.id), {
-            rent,
-            paid: Array(rentLength).fill(0),
-            reminders: [],
-        });
         interaction.reply({
-            content: `Rent set for **${person.data().name}** (user ${user}) at **$${rent}**`,
+            content: `Rent set for **${
+                person.name
+            }** (user ${user}) at **$${rent}**`,
         });
     },
 };

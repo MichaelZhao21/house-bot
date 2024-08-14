@@ -46,7 +46,6 @@ module.exports = {
      * @param {Object} settings
      */
     async execute(interaction, db, settings) {
-        // Add person to the database
         const user = interaction.options.getUser("user");
         const amount = interaction.options.getNumber("amount");
         const month = interaction.options.getNumber("month");
@@ -72,27 +71,50 @@ module.exports = {
         }
 
         // Set index of paid array
-        const payMonth = now.diff(dayjs(settings.rentStart), "months");
+        const payMonth = now.format("MM-YYYY");
 
-        // Get rent
-        const personRes = await getDoc(doc(db, "rent", user.id));
-        if (!personRes.exists()) {
+        // Get person
+        const personRef = await getDoc(doc(db, "people", user.id));
+        if (!personRef.exists()) {
             interaction.reply(
-                "Cannot pay rent of someone who is not in the house and doesn't have rent set! Use **addperson** and **setrent** to add them to the house."
+                "Cannot pay rent of someone who is not in the house!"
             );
             return;
         }
-        const person = personRes.data();
+        const person = personRef.data();
+
+        // Create paid object if doesn't exist
+        if (!person.paid) {
+            person.paid = {};
+        }
 
         // Calculate amount to pay
-        const toPay = amount ? amount : person.rent + settings.utilities;
-        person.paid[payMonth] = toPay;
+        const paid = person.paid[payMonth] ?? 0;
+        const total = person.rent + settings.utilities;
+        let toPay = total - paid;
+        if (!amount) {
+            person.paid[payMonth] = total;
+        } else {
+            if (total - paid < amount) {
+                interaction.reply(
+                    `${user} only owes $${
+                        total - paid
+                    }, which is less than $${amount}!`
+                );
+                return;
+            }
+            person.paid[payMonth] = paid + amount;
+            toPay = amount;
+        }
 
-        await setDoc(doc(db, "rent", user.id), person);
-        interaction.reply({
-            content: `**${user}** logged as having paid $${toPay} for ${
+        // Save data
+        await setDoc(doc(db, "people", user.id), person);
+        interaction.reply(
+            `**${user}** logged as having paid **$${
+                person.paid[payMonth]
+            }** for **${
                 now.month() + 1
-            }/${now.year()}`,
-        });
+            }/${now.year()}** out of a total of **$${total}** owed for the month`
+        );
     },
 };

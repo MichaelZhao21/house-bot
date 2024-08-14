@@ -11,7 +11,7 @@ dayjs.extend(timezone);
 dayjs.extend(objectSupport);
 
 // Global list to store all alarms
-const alarmList = [];
+let taskList = [];
 
 /**
  * Creates a message object.
@@ -27,7 +27,7 @@ function newMessage(title, subtitle, color, id) {
 
 /**
  * Sends a notification into a discord channel with the given message.
- * 
+ *
  * @param {Object} channel Discord channel to send message in
  * @param {string} user User ID or "everyone" to ping
  * @param {Object} message Message object
@@ -40,7 +40,7 @@ async function sendNotif(channel, user, message) {
     const embed = new EmbedBuilder()
         .setColor(message.color)
         .setTitle(message.title)
-        .setDescription(message.subtitle)
+        .setDescription(message.subtitle);
 
     channel.send({
         content: `${userOut} ${message.title}`,
@@ -66,7 +66,7 @@ function setAlarm(channel, user, time, message) {
         },
         sendNotif.bind(this, channel, user, message)
     );
-    alarmList.push(task);
+    taskList.push(task);
 }
 
 /**
@@ -76,13 +76,14 @@ function setAlarm(channel, user, time, message) {
  *
  * @param {number[]} times UNIX timestamp
  * @param {Function} func Function to run on each iteration
+ * @param {string} id ID of this repeating cron task
  * @param {number} iter Current iteration, used to get times[iter] and passed into function
  */
-function setRepeatTask(times, func, iter) {
+function setRepeatTask(times, func, id, iter) {
     // Define cron task for a certain time
-    Cron(
+    const task = Cron(
         dayjs(times[iter]).tz("America/Chicago").toISOString(),
-        { timezone: "America/Chicago" },
+        { timezone: "America/Chicago", name: `${id}-${iter}` },
         async () => {
             // Call function
             await func(iter);
@@ -92,12 +93,65 @@ function setRepeatTask(times, func, iter) {
                 return;
             }
 
-            console.log("CONTINUING!!!")
-
             // Otherwise, we keep going!
-            setRepeatTask(times, func, iter + 1);
+            setRepeatTask(times, func, id, iter + 1);
         }
     );
+    saveTask(task);
+}
+
+/**
+ * Add a task to the task list
+ *
+ * @param {Cron} task
+ */
+function saveTask(task) {
+    taskList.push(task);
+}
+
+/**
+ * Clear all tasks with the given prefix
+ *
+ * @param {string} prefix
+ */
+function clearTasks(prefix) {
+    const newTaskList = [];
+    taskList.forEach((t) => {
+        if (t.name.indexOf(prefix) === 0) {
+            t.stop();
+        } else {
+            newTaskList.push(t);
+        }
+    });
+
+    taskList = newTaskList;
+}
+
+/**
+ * Cron task that runs at 3:30 am every night
+ * that will clean up the task list
+ */
+function cleanTaskListTask() {
+    const task = Cron(
+        "30 3 * * *",
+        { timezone: "America/Chicago", name: "cleaner" },
+        () => {
+            // Keep if it has a pattern (repeated task) or if it hasn't run yet
+            taskList = taskList.filter(
+                (t) =>
+                    t.getPattern() !== undefined ||
+                    t.previousRun() === undefined
+            );
+        }
+    );
+    saveTask(task);
+}
+
+/**
+ * Literally stops ALL running tasks
+ */
+function stopAllTasks() {
+    taskList.forEach((t) => t.stop());
 }
 
 module.exports = {
@@ -105,111 +159,8 @@ module.exports = {
     sendNotif,
     setAlarm,
     setRepeatTask,
-
-    // TODO: Refactor into rent.js for rent calculations and stuff
-
-    /**
-     * Starts the rent timer
-     *
-     * @param {Firestore} db
-     * @param {number} month range between 0-11
-     * @param {number} year
-     * @param {boolean} firstTimer
-     * @param {Object} settings
-     * @param {Object} channel The channel to send messages in
-     */
-    startRentTimer: function startRentTimer(
-        db,
-        month,
-        year,
-        firstTimer,
-        settings,
-        channel
-    ) {
-        // Make sure notif channel is defined
-        if (!channel) {
-            throw "Invalid notification channel! Please set a notification channel with /setnotifchannel";
-        }
-
-        // Determine which date to set timer to
-        const date = firstTimer ? 25 : 28;
-        const message = firstTimer ? "Due" : "LATE";
-        const color = firstTimer ? 0xff997d : 0xff5959;
-        const subtext = firstTimer
-            ? "is due at the end of today for next month!"
-            : "was due already for next month!";
-
-        // Get dayjs time to set reminder for
-        const time = dayjs({
-            year: year,
-            month: month,
-            day: date,
-            hour: 20,
-            minute: 0,
-            second: 0,
-            millisecond: 0,
-        });
-
-        // Define cron task for a certain time
-        Cron(
-            time.tz("America/Chicago", true).toISOString(),
-            { timezone: "America/Chicago" },
-            async () => {
-                // Loop through each user and only send rent to those that haven't paid yet
-                (await getDocs(collection(db, "rent"))).forEach((d) => {
-                    const user = d.data();
-                    const id = d.id;
-
-                    // Get current month
-                    const now = dayjs({
-                        year: year,
-                        month: month,
-                        day: 0,
-                        hour: 0,
-                        minute: 0,
-                        second: 0,
-                        millisecond: 0,
-                    });
-                    const payMonth = now.diff(
-                        dayjs(settings.rentStart),
-                        "months"
-                    );
-                    const total = user.rent + settings.utilities;
-
-                    // Send if no pay
-                    if (user.paid[payMonth] < total) {
-                        // Create embed
-                        const embed = new EmbedBuilder()
-                            .setColor(color)
-                            .setTitle(`Rent is ${message}!`)
-                            .setDescription(
-                                `Rent of amount $${
-                                    total - user.paid[payMonth]
-                                } ${subtext} (${
-                                    month + 1
-                                }/${time.date()}/${year})`
-                            );
-
-                        channel.send({
-                            content: `<@${id}> Rent is ${message}!`,
-                            embeds: [embed],
-                        });
-                    }
-                });
-
-                // Calculate next month/year
-                if (!firstTimer) {
-                    if (month === 11) {
-                        month = 0;
-                        year++;
-                    } else {
-                        month++;
-                    }
-                }
-
-                // Start the next timer
-                startRentTimer(db, month, year, !firstTimer, settings, channel);
-            }
-        );
-    },
+    saveTask,
+    clearTasks,
+    cleanTaskListTask,
+    stopAllTasks,
 };

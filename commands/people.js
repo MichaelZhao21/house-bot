@@ -25,6 +25,8 @@ module.exports = {
             return;
         }
 
+        const fix = (a) => a.replace("_", "\\_");
+
         // Create embed
         const embed = new EmbedBuilder()
             .setColor(0xe0b5f5)
@@ -32,7 +34,14 @@ module.exports = {
             .setThumbnail(
                 "https://upload.wikimedia.org/wikipedia/en/1/14/HouseCastSeason1.jpg"
             )
-            .addFields(users.map((u) => ({ name: u.name, value: u.username.replace("_", "\\_") })))
+            .addFields(
+                users.map((u) => ({
+                    name: u.name,
+                    value: `username: ${fix(u.username)}\n rent: $${
+                        u.rent ?? 0
+                    }`,
+                }))
+            )
             .setTimestamp();
 
         interaction.reply({ embeds: [embed] });

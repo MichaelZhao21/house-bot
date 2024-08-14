@@ -10,9 +10,7 @@ const { initializeApp } = require("firebase/app");
 const { getFirestore, doc, getDoc, setDoc } = require("firebase/firestore");
 const path = require("node:path");
 const fs = require("fs");
-const { startRentTimer, setAlarm } = require("./src/notifications");
-const dayjs = require("dayjs");
-const { cleanAndGetEvents, setEventAlarm } = require("./src/events");
+const { reloadAllTasks } = require("./src/notifmain");
 
 async function main() {
     // Create a new client instance
@@ -47,33 +45,7 @@ async function main() {
         // Then clean up and set notifications
         const guild = await client.guilds.fetch(settings.guild);
         if (guild) {
-            // Get the main notif channel
-            const channel = await guild.channels.fetch(settings.notifChannel);
-
-            // Start the events timers
-            const events = await cleanAndGetEvents(db);
-            events.forEach((event) => setEventAlarm(event, channel));
-
-            // Calculate next rent notif interval
-            const now = dayjs();
-            let month = now.month();
-            let year = now.year();
-            const day = now.date();
-
-            // Start rent timer
-            if (day < 25) {
-                startRentTimer(db, month, year, true, settings, channel);
-            } else if (day < 28) {
-                startRentTimer(db, month, year, false, settings, channel);
-            } else {
-                if (month === 11) {
-                    month = 0;
-                    year++;
-                } else {
-                    month++;
-                }
-                startRentTimer(db, month, year, true, settings, channel);
-            }
+            reloadAllTasks(guild, db, settings);
         }
 
         console.log("Notification system ready!");
