@@ -58,13 +58,13 @@ module.exports = {
         let person = personRef.data();
 
         // Use inputted date or use today's
-        let now = dayjs().tz("America/Chicago");
+        let now = dayjs().tz("America/Chicago").add(1, "week");
         if (date) {
             now = dayjs(date, "MM-DD-YYYY").tz("America/Chicago", true);
         }
 
         // Add 1 week and get monday date, then save to user
-        const nextMon = now.add(1, "week").day(1).format("MM-DD-YYYY");
+        const nextMon = now.day(1).format("MM-DD-YYYY");
 
         if (!person.vacations) {
             person.vacations = [];
