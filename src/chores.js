@@ -95,7 +95,7 @@ async function assignChoresAndNotifs(guild, db, settings) {
             choreAss[(i + t13) % total].push(c);
         });
     }
-    if (dayjs().date() <= 7) {
+    if (dayjs().tz("America/Chicago").date() <= 7) {
         monthly.forEach((c, i) => {
             choreAss[(i + t23) % total].push(c);
         });
@@ -103,7 +103,7 @@ async function assignChoresAndNotifs(guild, db, settings) {
 
     // Assign to all users
     // Also split all people that are/aren't on vacation
-    const currMon = dayjs().day(1).format("MM-DD-YYYY");
+    const currMon = dayjs().tz("America/Chicago").day(1).format("MM-DD-YYYY");
     const vacay = [];
     const remaining = [];
     users.forEach((u) => {
@@ -142,7 +142,7 @@ async function assignChoresAndNotifs(guild, db, settings) {
     });
 
     // Add tidy up chore to everyone
-    remaining.forEach(r => r.chores.push("tidy"));
+    remaining.forEach((r) => r.chores.push("tidy"));
 
     // Update all user docs
     const batch = writeBatch(db);
@@ -177,7 +177,7 @@ async function assignChoresAndNotifs(guild, db, settings) {
 
     // Send notification about seasonal chore if applicable
     if (
-        dayjs().date() <= 7 &&
+        dayjs().tz("America/Chicago").date() <= 7 &&
         seasonalMonths.indexOf(dayjs().month()) !== -1 &&
         settings.chores.seasonally &&
         settings.chores.seasonally.length !== 0
@@ -218,7 +218,10 @@ async function setChoreNotifs(guild, db, settings) {
             ? user.choreNotifs.map((n) => {
                   const split = n.split("-");
                   const day = Number(split[0]);
-                  return dayjs(split[1], "HH:mm").day(day);
+                  return dayjs
+                      .tz(split[1], "HH:mm", "America/Chicago")
+                      .day(day)
+                      .add(day === 0 ? 1 : 0, "weeks");
               })
             : [];
 
@@ -231,7 +234,7 @@ async function setChoreNotifs(guild, db, settings) {
         );
 
         // Add late reminder for due date
-        times.push(dayjs().add(1, "week").day(0).hour(21).minute(0));
+        times.push(dayjs().tz("America/Chicago").add(1, "week").day(0).hour(21).minute(0));
         const lateMessage = newMessage(
             "YOUR CHORES ARE **LATE**!!",
             "Please do your chores ASAP. You have been given 1 strike:\n",

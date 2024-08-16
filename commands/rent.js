@@ -5,6 +5,9 @@ const {
 } = require("discord.js");
 const { Firestore, doc, getDoc } = require("firebase/firestore");
 const dayjs = require("dayjs");
+const timezone = require("dayjs/plugin/timezone");
+
+dayjs.extend(timezone);
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -29,7 +32,7 @@ module.exports = {
         let user = personRef.data();
 
         // Get monies
-        const payMonth = dayjs().format("MM-YYYY");
+        const payMonth = dayjs().tz("America/Chicago").format("MM-YYYY");
         const total = user.rent + settings.utilities;
         const owes = total - (user.paid[payMonth] ?? 0);
         const msg = owes === 0 ? "nothing (thanks for paying)" : "$" + owes;

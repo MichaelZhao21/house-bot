@@ -60,7 +60,7 @@ module.exports = {
         // Use inputted date or use today's
         let now = dayjs().tz("America/Chicago").add(1, "week");
         if (date) {
-            now = dayjs(date, "MM-DD-YYYY").tz("America/Chicago", true);
+            now = dayjs.tz(date, "MM-DD-YYYY", "America/Chicago");
         }
 
         // Add 1 week and get monday date, then save to user

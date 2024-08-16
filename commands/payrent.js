@@ -2,7 +2,9 @@ const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
 const { Firestore, setDoc, doc, getDoc } = require("firebase/firestore");
 const dayjs = require("dayjs");
 const objectSupport = require("dayjs/plugin/objectSupport");
+const timezone = require("dayjs/plugin/timezone");
 
+dayjs.extend(timezone);
 dayjs.extend(objectSupport);
 
 module.exports = {
@@ -57,7 +59,7 @@ module.exports = {
             return;
         }
 
-        let now = dayjs();
+        let now = dayjs().tz("America/Chicago");
         if (!!month && !!year) {
             now = dayjs({
                 year: year,
@@ -67,7 +69,7 @@ module.exports = {
                 minute: 0,
                 second: 0,
                 millisecond: 0,
-            });
+            }).tz("America/Chicago", true);
         }
 
         // Set index of paid array

@@ -80,7 +80,11 @@ module.exports = {
                     );
                     throw new Error();
                 }
-                const time = dayjs(stp[1].trim(), "HH:mm");
+                const time = dayjs.tz(
+                    stp[1].trim(),
+                    "HH:mm",
+                    "America/Chicago"
+                );
                 const timeStr = time.format("HH:mm");
 
                 // No alarms at or before 7 am on Monday (as chores are assigned then)

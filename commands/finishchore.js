@@ -1,6 +1,8 @@
-const dayjs = require("dayjs");
 const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
 const { Firestore, setDoc, doc, getDoc } = require("firebase/firestore");
+const dayjs = require("dayjs");
+const timezone = require("dayjs/plugin/timezone");
+dayjs.extend(timezone);
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -32,7 +34,7 @@ module.exports = {
         const fOp = interaction.options.getBoolean("finished");
         const finished = fOp === null || fOp === undefined ? true : fOp;
 
-        const date = dayjs().day(0).format("MM-DD-YYYY");
+        const date = dayjs().tz("America/Chicago").day(0).format("MM-DD-YYYY");
 
         // Get user
         let personRef = await getDoc(doc(db, "people", interaction.user.id));

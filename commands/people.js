@@ -6,7 +6,9 @@ const {
 const { Firestore, getDocs, collection } = require("firebase/firestore");
 const dayjs = require("dayjs");
 const customParseFormat = require("dayjs/plugin/customParseFormat");
+const timezone = require("dayjs/plugin/timezone");
 
+dayjs.extend(timezone);
 dayjs.extend(customParseFormat);
 
 module.exports = {
@@ -31,7 +33,7 @@ module.exports = {
 
         const fix = (a) => a.replace("_", "\\_");
 
-        const thisWeek = dayjs().day(0);
+        const thisWeek = dayjs().tz("America/Chicago").day(0);
 
         // Create embed
         const embed = new EmbedBuilder()
@@ -48,7 +50,9 @@ module.exports = {
                         u.extraChores
                     }\n- vacations: ${u.vacations.filter(
                         (v) =>
-                            !dayjs(v, "MM-DD-YYYY").isBefore(thisWeek, "date")
+                            !dayjs
+                                .tz(v, "MM-DD-YYYY", "America/Chicago")
+                                .isBefore(thisWeek, "date")
                     )}\n- strikes: ${u.strikes}`,
                 }))
             );

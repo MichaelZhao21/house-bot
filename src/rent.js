@@ -1,5 +1,4 @@
 const { Cron } = require("croner");
-const dayjs = require("dayjs");
 const {
     Firestore,
     getDocs,
@@ -14,7 +13,10 @@ const {
     setRepeatTask,
     saveTask,
 } = require("./notifications");
+const dayjs = require("dayjs");
+const timezone = require("dayjs/plugin/timezone");
 
+dayjs.extend(timezone);
 /**
  * Sets up a cron task to create notifications each
  * month for rent.
@@ -51,7 +53,7 @@ async function createRepeatingRentNotifs(guild, db, settings) {
 
         // Create a list of times
         const times = [];
-        const now = dayjs().minute(0).second(0);
+        const now = dayjs().tz("America/Chicago").minute(0).second(0);
         if (now.date() < 20) times.push(now.date(20).hour(7));
         else if (now.date() < 25) {
             times.push(now.date(25).hour(7));
@@ -104,7 +106,7 @@ async function createRepeatingRentNotifs(guild, db, settings) {
             }
 
             // No need to remind if user paid!
-            const neow = dayjs().format("MM-YYYY");
+            const neow = dayjs().tz("America/Chicago").format("MM-YYYY");
             const total = user.rent + settings.utilities;
             if (user.paid[neow] >= total) return;
 
