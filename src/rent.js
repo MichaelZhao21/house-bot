@@ -1,6 +1,13 @@
 const { Cron } = require("croner");
 const dayjs = require("dayjs");
-const { Firestore, getDocs, collection, getDoc, doc } = require("firebase/firestore");
+const {
+    Firestore,
+    getDocs,
+    collection,
+    getDoc,
+    doc,
+    setDoc,
+} = require("firebase/firestore");
 const {
     newMessage,
     sendNotif,
@@ -76,7 +83,7 @@ async function createRepeatingRentNotifs(guild, db, settings) {
             ),
             newMessage(
                 "Rent is **LATE**",
-                subtitle + " Which is now late.",
+                subtitle + " Which is now late. You will be given a strike.",
                 0xbf0254,
                 `rent-${d.id}`
             ),
@@ -97,6 +104,13 @@ async function createRepeatingRentNotifs(guild, db, settings) {
             const neow = dayjs().format("MM-YYYY");
             const total = user.rent + settings.utilities;
             if (user.paid[neow] >= total) return;
+
+            // If rent is late (last notif), give strike
+            if (iter + 1 === messages.length) {
+                // Give strike
+                user.strikes += 1;
+                await setDoc(doc(db, "people", d.id), user);
+            }
 
             // Otherwise remind user to pay
             sendNotif(channel, d.id, messages[iter]);
