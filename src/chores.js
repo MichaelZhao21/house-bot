@@ -141,6 +141,9 @@ async function assignChoresAndNotifs(guild, db, settings) {
         }
     });
 
+    // Add tidy up chore to everyone
+    remaining.forEach(r => r.chores.push("tidy"));
+
     // Update all user docs
     const batch = writeBatch(db);
     users.forEach((u) => {
