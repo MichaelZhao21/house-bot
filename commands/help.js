@@ -32,7 +32,7 @@ module.exports = {
             },
             {
                 name: "/chores",
-                value: "Shows the chores you have for the week",
+                value: "Shows the chores you have for the week. Can also list all chores for the house",
             },
             {
                 name: "/finish",

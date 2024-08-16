@@ -8,7 +8,14 @@ const { Firestore, doc, getDoc } = require("firebase/firestore");
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("chores")
-        .setDescription("Gets your current list of chores"),
+        .setDescription("Gets your current list of chores")
+        .addBooleanOption((option) =>
+            option
+                .setName("showall")
+                .setDescription(
+                    "Set to true to show ALL chores (default false)"
+                )
+        ),
 
     /**
      * Execution script
@@ -17,6 +24,44 @@ module.exports = {
      * @param {Object} settings
      */
     async execute(interaction, db, settings) {
+        // Get show all option
+        const showall = interaction.options.getBoolean("showall");
+        if (showall) {
+            const embed = new EmbedBuilder()
+                .setColor(0xaf99ff)
+                .setTitle("All chores")
+                .setDescription("Here is a list of all chores for the house")
+                .setFields([
+                    {
+                        name: "Weekly Chores",
+                        value: settings.chores.weekly.map(
+                            (c) => `- ${settings.chores.nameMap[c]} [${c}]`
+                        ).join("\n"),
+                    },
+                    {
+                        name: "Biweekly Chores",
+                        value: settings.chores.biweekly.map(
+                            (c) => `- ${settings.chores.nameMap[c]} [${c}]`
+                        ).join("\n"),
+                    },
+                    {
+                        name: "Monthly Chores",
+                        value: settings.chores.monthly.map(
+                            (c) => `- ${settings.chores.nameMap[c]} [${c}]`
+                        ).join("\n"),
+                    },
+                    {
+                        name: "Seasonal Chores",
+                        value: settings.chores.seasonally.map(
+                            (c) => `- ${settings.chores.nameMap[c]} [${c}]`
+                        ).join("\n"),
+                    },
+                ]);
+
+            interaction.reply({ embeds: [embed] });
+            return;
+        }
+
         // Get user's doc
         let personRef = await getDoc(doc(db, "people", interaction.user.id));
         if (!personRef.exists()) {
