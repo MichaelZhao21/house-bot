@@ -32,44 +32,48 @@ module.exports = {
         const fOp = interaction.options.getBoolean("finished");
         const finished = fOp === null || fOp === undefined ? true : fOp;
 
-        const date = dayjs().day(0).format("M-D-YYYY");
+        const date = dayjs().day(0).format("MM-DD-YYYY");
 
-        // TODO: MODIFY AND COMPLTE THE BOTTOM SECTION FOR CHORES
-
-        // Get the list of this week's chores
-        const weekChoresRes = await getDoc(doc(db, "chorelist", date));
-        if (!weekChoresRes.exists()) {
+        // Get user
+        let personRef = await getDoc(doc(db, "people", interaction.user.id));
+        if (!personRef.exists()) {
             interaction.reply(
-                "No chores set for this week (week of " + date + ")"
+                "People who are not part of the house cannot go on vacation!"
             );
             return;
         }
-        const weekChores = weekChoresRes.data();
+        let user = personRef.data();
 
-        // Make sure this week's doc exists
-        const weekDocRes = await getDoc(doc(db, "choredone", date));
-        let weekDoc;
-        if (!weekDocRes.exists()) {
-            weekDoc = {};
-            Object.keys(weekChores).forEach((k) => (weekDoc[k] = false));
-        } else {
-            weekDoc = weekDocRes.data();
+        // Make choresDone object if not exists
+        if (!user.choresDone) {
+            user.choresDone = {};
+        }
+        if (!user.choresDone[date]) {
+            user.choresDone[date] = [];
         }
 
-        // Make sure the chore exists
-        if (!weekChores.hasOwnProperty(name)) {
+        // Move finished chore to done array
+        const a = finished ? user.chores : user.choresDone[date];
+        const b = finished ? user.choresDone[date] : user.chores;
+        const cd = finished ? "chores" : "completed chores";
+
+        const idx = a.indexOf(name);
+        if (idx === -1) {
+            const choreStr = a.join(", ");
             interaction.reply(
-                "Invalid chore name! Expected one of " +
-                    Object.keys(weekChores).toString()
+                `Could not find chore **${name}**. Your ${cd} for this week are ${choreStr}`
             );
             return;
         }
+        const chore = a.splice(idx)[0];
+        b.push(chore);
 
-        // Set chore to done and store in DB
-        weekDoc[name] = true;
-        await setDoc(doc(db, "choredone", date), weekDoc);
+        // Save person
+        await setDoc(personRef, user);
+
+        const msg = finished ? "completed!" : "set to uncompleted";
         interaction.reply({
-            content: `Chore **${name}** completed!`,
+            content: `Chore **${name}** ${msg}`,
         });
     },
 };

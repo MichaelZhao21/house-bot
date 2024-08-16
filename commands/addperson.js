@@ -31,6 +31,14 @@ module.exports = {
         await setDoc(doc(db, "people", user.id), {
             name,
             username: user.username,
+            paid: {},
+            rent: 0,
+            chores: [],
+            choresDone: [],
+            vacations: [],
+            choreNotifs: [],
+            strikes: 0,
+            extraChores: 0,
         });
         interaction.reply({
             content: `**${name}** (user ${user}) successfully added to home`,

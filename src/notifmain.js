@@ -1,3 +1,4 @@
+const { setChoreNotifs } = require("./chores");
 const { cleanAndGetEvents, setEventAlarm } = require("./events");
 const { stopAllTasks, cleanTaskListTask } = require("./notifications");
 const { setRentNotifs } = require("./rent");
@@ -28,6 +29,9 @@ async function reloadAllTasks(guild, db, settings) {
 
     // Start rent notification cron task
     setRentNotifs(guild, db, settings);
+
+    // Start the chore notification cron task
+    setChoreNotifs(guild, db, settings);
 
     // Start task list cleanup task
     cleanTaskListTask();

@@ -30,12 +30,23 @@ module.exports = {
             settings.guild = channel.guild.id;
             await setDoc(doc(db, "settings", "0"), settings);
         } else {
-            const userDoc = (await getDoc(doc(db, "people", user.id))).data();
+            const userRef = await getDoc(doc(db, "people", user.id));
+            if (!userRef.exists()) {
+                interaction.reply(
+                    "Cannot set notif channel of someone not in the house!"
+                );
+                return;
+            }
+            const userDoc = userRef.data();
             userDoc.notifChannel = channel.id;
             userDoc.guild = channel.guild.id;
             await setDoc(doc(db, "people", user.id), userDoc);
         }
 
-        interaction.reply(`Updated notification channel to ${channel}`);
+        interaction.reply(
+            `Updated notification channel to ${channel}${
+                user ? ` for ${user}` : ""
+            }`
+        );
     },
 };

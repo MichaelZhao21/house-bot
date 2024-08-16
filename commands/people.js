@@ -39,7 +39,7 @@ module.exports = {
                     name: u.name,
                     value: `username: ${fix(u.username)}\n rent: $${
                         u.rent ?? 0
-                    }`,
+                    }\n chorenum: ${u.number}\n chores: ${u.chores.join(", ")}\n strikes: ${u.strikes}`,
                 }))
             )
             .setTimestamp();
