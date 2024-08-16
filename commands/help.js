@@ -62,9 +62,6 @@ module.exports = {
             .setDescription(
                 "These are all the commands that can be used. Admin commands are not listed and prefixed with 'admin'."
             )
-            .setThumbnail(
-                "https://as1.ftcdn.net/v2/jpg/05/74/72/86/1000_F_574728684_voyDBkCWq2cKEd3MDoNE0nQLrWYFVxFh.jpg"
-            )
             .addFields(commands);
 
         interaction.reply({ embeds: [embed] });

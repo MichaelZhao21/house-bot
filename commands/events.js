@@ -33,9 +33,6 @@ module.exports = {
         const embed = new EmbedBuilder()
             .setTitle("All Future Events")
             .setDescription("List of all events for the future.")
-            .setThumbnail(
-                "https://www.shutterstock.com/shutterstock/photos/2348753395/display_1500/stock-vector-cute-cartoon-january-calendar-clipart-page-for-kids-vector-illustration-for-children-vector-2348753395.jpg"
-            )
             .setColor(0xd67ce6)
             .addFields(
                 events.map((e) => ({

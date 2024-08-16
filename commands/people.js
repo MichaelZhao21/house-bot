@@ -37,9 +37,6 @@ module.exports = {
         const embed = new EmbedBuilder()
             .setColor(0xe0b5f5)
             .setTitle("House Members")
-            .setThumbnail(
-                "https://upload.wikimedia.org/wikipedia/en/1/14/HouseCastSeason1.jpg"
-            )
             .addFields(
                 users.map((u) => ({
                     name: u.name,
