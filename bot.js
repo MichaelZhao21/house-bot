@@ -43,9 +43,13 @@ async function main() {
         console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 
         // Then clean up and set notifications
-        const guild = await client.guilds.fetch(settings.guild);
-        if (guild) {
-            reloadAllTasks(guild, db, settings);
+        if (!settings.guild) {
+            console.log("No guild set, ignoring notification system");
+        } else {
+            const guild = await client.guilds.fetch(settings.guild);
+            if (guild) {
+                reloadAllTasks(guild, db, settings);
+            }
         }
 
         console.log("Notification system ready!");
