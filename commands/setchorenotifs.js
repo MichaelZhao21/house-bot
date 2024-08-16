@@ -84,7 +84,7 @@ module.exports = {
                 const timeStr = time.format("HH:mm");
 
                 // No alarms at or before 7 am on Monday (as chores are assigned then)
-                if (day === 0 && time.hour() >= 21) {
+                if (day === 1 && time.hour() <= 7) {
                     interaction.reply(
                         `Invalid alarm time set: ${st} -- must be after Monday 7am as that's when chores are set`
                     );
