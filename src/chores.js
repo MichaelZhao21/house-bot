@@ -109,7 +109,7 @@ async function assignChoresAndNotifs(guild, db, settings) {
     users.forEach((u) => {
         // Assign chore
         const number = (u.number + settings.weekCount) % total;
-        u.chores = choreAss[number];
+        u.chores.push(...choreAss[number]);
 
         // Split vacay or not
         if (u.vacations.indexOf(currMon) !== -1) {
