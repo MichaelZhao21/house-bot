@@ -38,7 +38,7 @@ module.exports = {
         let personRef = await getDoc(doc(db, "people", interaction.user.id));
         if (!personRef.exists()) {
             interaction.reply(
-                "People who are not part of the house cannot go on vacation!"
+                "People who are not part of the house cannot finish chores!"
             );
             return;
         }
@@ -65,8 +65,8 @@ module.exports = {
             );
             return;
         }
-        const chore = a.splice(idx)[0];
-        b.push(chore);
+        a.splice(idx, 1);
+        b.push(name);
 
         // Save person
         await setDoc(personRef.ref, user);
