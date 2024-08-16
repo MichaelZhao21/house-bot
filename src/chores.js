@@ -121,12 +121,15 @@ async function assignChoresAndNotifs(guild, db, settings) {
 
     // Figure out which chores are for ppl on vacation
     const openChores = [];
-    vacay.forEach((u) => openChores.push(...u.chores));
+    vacay.forEach((u) => {
+        openChores.push(...u.chores), (u.chores = []);
+    });
 
     // Loop through openChores until empty and give to people who have done the least number of extra chores
     openChores.forEach((c) => {
-        const min = Math.min(remaining.map((u) => u.extraChores ?? 0));
+        const min = Math.min(...remaining.map((u) => u.extraChores ?? 0));
         for (let i = 0; i < remaining.length; i++) {
+            if (!remaining[i].extraChores) remaining[i].extraChores = 0;
             if (remaining[i].extraChores === min) {
                 remaining[i].chores.push(c);
                 remaining[i].extraChores++;
@@ -137,7 +140,7 @@ async function assignChoresAndNotifs(guild, db, settings) {
 
     // Update all user docs
     const batch = writeBatch(db);
-    remaining.forEach((u) => {
+    users.forEach((u) => {
         const { id, ...noId } = u;
         batch.set(doc(db, "people", id), noId);
     });
@@ -167,7 +170,12 @@ async function assignChoresAndNotifs(guild, db, settings) {
     });
 
     // Send notification about seasonal chore if applicable
-    if (dayjs().date() <= 7 && seasonalMonths.indexOf(dayjs().month()) !== -1 && settings.chores.seasonally && settings.chores.seasonally.length !== 0) {
+    if (
+        dayjs().date() <= 7 &&
+        seasonalMonths.indexOf(dayjs().month()) !== -1 &&
+        settings.chores.seasonally &&
+        settings.chores.seasonally.length !== 0
+    ) {
         const channel = await guild.channels.fetch(settings.notifChannel);
         sendNotif(
             channel,
