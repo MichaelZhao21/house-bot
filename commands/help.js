@@ -54,6 +54,10 @@ module.exports = {
                 name: "/addevent",
                 value: "Add an event, will remind people 1 hr before, 10 mins before, and on the dot",
             },
+            {
+                name: "/vacation",
+                value: "Sets you to be 'on vacation' for the upcoming week (you won't be assigned chores). Can also manually choose a week to set.",
+            },
         ];
         // Create embed
         const embed = new EmbedBuilder()
