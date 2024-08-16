@@ -54,7 +54,7 @@ const seasonalMonths = [0, 3, 6, 9];
  * Assigns chores for the current week. Also will call setChoreNotifs.
  *
  * Weekly - every week
- * Biweekly - even weeks
+ * Biweekly - ODD weeks
  * Monthly - first week of the month (day <= 7)
  * Seasonally - first week of October, January, April, July - BOT WILL NOT ASSIGN BUT JUST REMIND
  *
@@ -90,7 +90,7 @@ async function assignChoresAndNotifs(guild, db, settings) {
     weekly.forEach((c, i) => {
         choreAss[i % total].push(c);
     });
-    if (settings.weekCount % 2 === 0) {
+    if (settings.weekCount % 2 === 1) {
         biweekly.forEach((c, i) => {
             choreAss[(i + t13) % total].push(c);
         });
