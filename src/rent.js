@@ -94,6 +94,9 @@ async function createRepeatingRentNotifs(guild, db, settings) {
 
         // Create alarm for the event
         const rentAlarm = async (iter) => {
+            // Do nothing if rent is not being tracked!
+            if (!settings.tracking) return;
+
             // Get user
             const user = (await getDoc(doc(db, "people", d.id))).data();
             if (!user.paid) {
