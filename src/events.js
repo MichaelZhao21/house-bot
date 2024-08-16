@@ -49,33 +49,43 @@ async function cleanAndGetEvents(db) {
 function setEventAlarm(event, channel) {
     // Create list of times
     const times = [];
-    const curr = dayjs(event.time).tz("America/Chicago");
-    times.push(curr.subtract(60, "minutes"));
-    times.push(curr.subtract(10, "minutes"));
-    times.push(curr);
+    const now = dayjs().tz("America/Chicago");
+    const eventTime = dayjs(event.time).tz("America/Chicago");
+    if (now.isBefore(eventTime.subtract(60, "minutes")))
+        times.push(eventTime.subtract(60, "minutes"));
+    if (now.isBefore(eventTime.subtract(10, "minutes")))
+        times.push(eventTime.subtract(10, "minutes"));
+    times.push(eventTime);
 
     // Create list of messages
-    const time = curr.format("h:mm a");
-    const messages = [
-        newMessage(
-            `Event in 1 hour: **${event.title}** (${time})`,
-            event.subtitle,
-            0xfbfc9f,
-            event.id + "-t60"
-        ),
-        newMessage(
-            `Event in 10 mins: **${event.title}** (${time})`,
-            event.subtitle,
-            0xffb330,
-            event.id + "-t10"
-        ),
+    const time = eventTime.format("h:mm a");
+    const messages = [];
+    if (now.isBefore(eventTime.subtract(60, "minutes")))
+        messages.push(
+            newMessage(
+                `Event in 1 hour: **${event.title}** (${time})`,
+                event.subtitle,
+                0xfbfc9f,
+                event.id + "-t60"
+            )
+        );
+    if (now.isBefore(eventTime.subtract(10, "minutes")))
+        messages.push(
+            newMessage(
+                `Event in 10 mins: **${event.title}** (${time})`,
+                event.subtitle,
+                0xffb330,
+                event.id + "-t10"
+            )
+        );
+    messages.push(
         newMessage(
             `Event NOW: **${event.title}** (${time})`,
             event.subtitle,
             0xff3636,
             event.id
-        ),
-    ];
+        )
+    );
 
     // Create alarm for the event
     const eventAlarm = (iter) => {
