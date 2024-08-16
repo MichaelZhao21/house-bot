@@ -141,6 +141,11 @@ async function assignChoresAndNotifs(guild, db, settings) {
         const { id, ...noId } = u;
         batch.set(doc(db, "people", id), noId);
     });
+
+    // Also update week count for settings
+    settings.weekCount += 1;
+    batch.set(doc(db, "settings", "0"), settings);
+
     await batch.commit();
 
     // Send notification about chores for each user who is remaining
