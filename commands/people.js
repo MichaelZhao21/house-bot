@@ -4,6 +4,10 @@ const {
     EmbedBuilder,
 } = require("discord.js");
 const { Firestore, getDocs, collection } = require("firebase/firestore");
+const dayjs = require("dayjs");
+const customParseFormat = require("dayjs/plugin/customParseFormat");
+
+dayjs.extend(customParseFormat);
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -27,6 +31,8 @@ module.exports = {
 
         const fix = (a) => a.replace("_", "\\_");
 
+        const thisWeek = dayjs().day(0);
+
         // Create embed
         const embed = new EmbedBuilder()
             .setColor(0xe0b5f5)
@@ -37,12 +43,18 @@ module.exports = {
             .addFields(
                 users.map((u) => ({
                     name: u.name,
-                    value: `username: ${fix(u.username)}\n rent: $${
+                    value: `username: ${fix(u.username)}\n- base rent: $${
                         u.rent ?? 0
-                    }\n chorenum: ${u.number}\n chores: ${u.chores.join(", ")}\n strikes: ${u.strikes}`,
+                    }\n- chores left: ${u.chores.join(
+                        ", "
+                    )}\n- extra chores done: ${
+                        u.extraChores
+                    }\n- vacations: ${u.vacations.filter(
+                        (v) =>
+                            !dayjs(v, "MM-DD-YYYY").isBefore(thisWeek, "date")
+                    )}\n- strikes: ${u.strikes}`,
                 }))
-            )
-            .setTimestamp();
+            );
 
         interaction.reply({ embeds: [embed] });
     },
