@@ -30,7 +30,6 @@ async function main() {
         settings = {
             notifChannel: null,
             guild: null,
-            notifs: [],
             utilities: 0,
             rentStart: 0,
             rentEnd: 0,
