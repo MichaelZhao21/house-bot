@@ -39,6 +39,10 @@ module.exports = {
                 value: "Sets a specific chore to 'done', can also set a chore to not done",
             },
             {
+                name: "/trade",
+                value: "Trade chores with someone else",
+            },
+            {
                 name: "/trash",
                 value: "Notifies the next person to take out the trash, will rotate",
             },
@@ -57,6 +61,10 @@ module.exports = {
             {
                 name: "/vacation",
                 value: "Sets you to be 'on vacation' for the upcoming week (you won't be assigned chores). Can also manually choose a week to set.",
+            },
+            {
+                name: "/notifications",
+                value: "Shows you your upcoming notifications or all your set notifications",
             },
         ];
         // Create embed
