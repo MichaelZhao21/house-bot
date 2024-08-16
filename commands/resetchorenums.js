@@ -4,6 +4,7 @@ const {
     getDocs,
     collection,
     writeBatch,
+    doc,
 } = require("firebase/firestore");
 
 module.exports = {
@@ -17,13 +18,20 @@ module.exports = {
      * Execution script
      * @param {CommandInteraction} interaction
      * @param {Firestore} db
+     * @param {Object} settings
      */
-    async execute(interaction, db) {
+    async execute(interaction, db, settings) {
         const users = await getDocs(collection(db, "people"));
         const batch = writeBatch(db);
         users.docs.forEach((v, i) => {
             batch.update(v.ref, { number: i });
         });
+
+        settings.total = users.size;
+        settings.trashNum = 0;
+        settings.recyclingNum = 0;
+        batch.update(doc(db, "settings", "0"), settings);
+
         await batch.commit();
 
         interaction.reply("All user chore ordering numbers reset!");

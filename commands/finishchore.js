@@ -69,7 +69,7 @@ module.exports = {
         b.push(chore);
 
         // Save person
-        await setDoc(personRef, user);
+        await setDoc(personRef.ref, user);
 
         const msg = finished ? "completed!" : "set to uncompleted";
         interaction.reply({
