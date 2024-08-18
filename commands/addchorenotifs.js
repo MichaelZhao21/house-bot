@@ -34,8 +34,10 @@ function getDay(input) {
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("setchorenotifs")
-        .setDescription("Sets your own notifications for your chores")
+        .setName("addchorenotifs")
+        .setDescription(
+            "Adds a notification to your own notifications for your chores"
+        )
         .addStringOption((option) =>
             option
                 .setName("notifs")
@@ -108,18 +110,26 @@ module.exports = {
                 return `${day}-${timeStr}`;
             });
 
-            person.choreNotifs = parsed;
+            const set = new Set([...person.choreNotifs, ...parsed]);
+            person.choreNotifs = Array.from(set);
             await setDoc(personRef.ref, person);
 
             // Restart notifications
             clearTasks(`chore-notif-${personRef.id}`);
-            setOneChoreNotif(interaction.guild, db, settings, await getDoc(personRef.ref));
+            await setOneChoreNotif(
+                interaction.guild,
+                db,
+                settings,
+                await getDoc(personRef.ref)
+            );
 
             interaction.reply({
-                content: `Set chore notifications (day-HHmm): [${parsed.join(
+                content: `Set chore notifications (day-HHmm): [${person.choreNotifs.join(
                     ", "
                 )}]`,
             });
-        } catch (e) {}
+        } catch (e) {
+            console.error(e);
+        }
     },
 };

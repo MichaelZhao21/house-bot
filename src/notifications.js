@@ -101,6 +101,26 @@ function setRepeatTask(times, func, id, iter) {
 }
 
 /**
+ * Runs a task at a specific time
+ *
+ * @param {number[]} time UNIX timestamp
+ * @param {Function} func Function to run on each iteration
+ * @param {string} id ID of this repeating cron task
+ * @param {number} iter Current iteration, used to get times[iter] and passed into function
+ */
+function setTask(time, func, id, iter) {
+    const tasak = Cron(
+        dayjs(time).tz("America/Chicago").toISOString(),
+        { timezone: "America/Chicago", name: `${id}-${iter}` },
+        async () => {
+            // Call function
+            await func(iter);
+        }
+    );
+    saveTask(tasak);
+}
+
+/**
  * Add a task to the task list
  *
  * @param {Cron} task
@@ -163,4 +183,5 @@ module.exports = {
     clearTasks,
     cleanTaskListTask,
     stopAllTasks,
+    setTask,
 };

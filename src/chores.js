@@ -7,6 +7,8 @@ const {
     doc,
     writeBatch,
     setDoc,
+    QueryDocumentSnapshot,
+    DocumentData,
 } = require("firebase/firestore");
 const {
     newMessage,
@@ -14,6 +16,7 @@ const {
     setRepeatTask,
     saveTask,
     clearTasks,
+    setTask,
 } = require("./notifications");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
@@ -210,78 +213,112 @@ async function assignChoresAndNotifs(guild, db, settings) {
  */
 async function setChoreNotifs(guild, db, settings) {
     // TODO: Make async promise.all
-    (await getDocs(collection(db, "people"))).forEach(async (d) => {
-        const user = d.data();
+    (await getDocs(collection(db, "people"))).forEach((d) => {
+        setOneChoreNotif(guild, db, settings, d);
+    });
+}
 
-        // Create a list of times
-        const times = user.choreNotifs
-            ? user.choreNotifs.map((n) => {
-                  const split = n.split("-");
-                  const day = Number(split[0]);
+/**
+ * Sets the notifications for chores for ONE person
+ *
+ * @param {Object} guild The guild to use
+ * @param {Firestore} db Firestore database instance
+ * @param {Object} settings Settings object
+ * @param {QueryDocumentSnapshot<DocumentData, DocumentData>} d User doc
+ */
+async function setOneChoreNotif(guild, db, settings, d) {
+    const user = d.data();
+
+    // Create a list of times
+    const times = user.choreNotifs
+        ? user.choreNotifs.map((n) => {
+              const split = n.split("-");
+              const day = Number(split[0]);
+
+              // Return smth else if setting on sunday (special case lmao)
+              if (dayjs().tz("America/Chicago").day() === 0) {
                   return dayjs
                       .tz(split[1], "HH:mm", "America/Chicago")
                       .day(day)
-                      .add(day === 0 ? 1 : 0, "weeks");
-              })
-            : [];
+                      .add(day === 0 ? 0 : -1, "weeks");
+              }
 
-        // Create a list of messages
-        const message = newMessage(
-            "Do your chores!",
-            "This is a reminder to do your chores:\n",
-            0xa3f1ff,
-            `chore-notif-${d.id}-`
+              return dayjs
+                  .tz(split[1], "HH:mm", "America/Chicago")
+                  .day(day)
+                  .add(day === 0 ? 1 : 0, "weeks");
+          })
+        : [];
+
+    // Create a list of messages
+    const message = newMessage(
+        "Do your chores!",
+        "This is a reminder to do your chores:\n",
+        0xa3f1ff,
+        `chore-notif-${d.id}-`
+    );
+
+    // Add late reminder for due date
+    if (dayjs().tz("America/Chicago").day() === 0) {
+        times.push(dayjs().tz("America/Chicago").day(0).hour(21).minute(0));
+    } else {
+        times.push(
+            dayjs()
+                .tz("America/Chicago")
+                .add(1, "week")
+                .day(0)
+                .hour(21)
+                .minute(0)
         );
+    }
+    const lateMessage = newMessage(
+        "YOUR CHORES ARE **LATE**!!",
+        "Please do your chores ASAP. You have been given 1 strike:\n",
+        0xc90076,
+        `chore-notif-${d.id}-late`
+    );
 
-        // Add late reminder for due date
-        times.push(dayjs().tz("America/Chicago").add(1, "week").day(0).hour(21).minute(0));
-        const lateMessage = newMessage(
-            "YOUR CHORES ARE **LATE**!!",
-            "Please do your chores ASAP. You have been given 1 strike:\n",
-            0xc90076,
-            `chore-notif-${d.id}-late`
-        );
+    // Get the user notif channel
+    const channel = await guild.channels.fetch(user.notifChannel);
 
-        // Get the user notif channel
-        const channel = await guild.channels.fetch(user.notifChannel);
+    // Create alarm for the event
+    const notifAlarm = async (iter) => {
+        // Get user
+        const user = (await getDoc(doc(db, "people", d.id))).data();
+        if (!user.paid) {
+            user.paid = {};
+        }
 
-        // Create alarm for the event
-        const notifAlarm = async (iter) => {
-            // Get user
-            const user = (await getDoc(doc(db, "people", d.id))).data();
-            if (!user.paid) {
-                user.paid = {};
-            }
+        // No need to remind if user has finished all chores
+        if (user.chores.length === 0) {
+            return;
+        }
 
-            // No need to remind if user has finished all chores
-            if (user.chores.length === 0) {
-                return;
-            }
+        // If late, send late notif
+        if (iter + 1 === times.length) {
+            // Give strike
+            user.strikes += 1;
+            await setDoc(doc(db, "people", d.id), user);
 
-            // If late, send late notif
-            if (iter + 1 === times.length) {
-                // Give strike
-                user.strikes += 1;
-                await setDoc(doc(db, "people", d.id), user);
-
-                lateMessage.subtitle += user.chores
-                    .map((c) => `- ${settings.chores.nameMap[c]} [${c}]`)
-                    .join("\n");
-                sendNotif(channel, d.id, lateMessage);
-                return;
-            }
-
-            // Send notification
-            const cm = structuredClone(message);
-            cm.subtitle += user.chores
+            lateMessage.subtitle += user.chores
                 .map((c) => `- ${settings.chores.nameMap[c]} [${c}]`)
                 .join("\n");
-            cm.id += iter;
-            sendNotif(channel, d.id, cm);
-        };
+            sendNotif(channel, d.id, lateMessage);
+            return;
+        }
 
-        // Set the repeating task!
-        setRepeatTask(times, notifAlarm, `chore-notif-${d.id}-repeat`, 0);
+        // Send notification
+        const cm = structuredClone(message);
+        cm.subtitle += user.chores
+            .map((c) => `- ${settings.chores.nameMap[c]} [${c}]`)
+            .join("\n");
+        cm.id += iter;
+        sendNotif(channel, d.id, cm);
+    };
+
+    // Set the repeating task!
+    times.forEach((t, i) => {
+        setTask(t, notifAlarm.bind(this, i), `chore-notif-${d.id}`, i);
     });
 }
 
@@ -293,5 +330,6 @@ module.exports = {
     startChoreSystem,
     assignChoresAndNotifs,
     setChoreNotifs,
+    setOneChoreNotif,
     deleteChoreNotifs,
 };
