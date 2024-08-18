@@ -35,6 +35,14 @@ module.exports = {
                 value: "Shows the chores you have for the week. Can also list all chores for the house",
             },
             {
+                name: "/setchorenotifs",
+                value: "Set custom notifications for your chores -- will REPLACE the previously set notifications"
+            },
+            {
+                name: "/addchorenotifs",
+                value: "Adds custom notifications for your chores -- will KEEP the previously set notifications"
+            },
+            {
                 name: "/finish",
                 value: "Sets a specific chore to 'done', can also set a chore to not done",
             },
