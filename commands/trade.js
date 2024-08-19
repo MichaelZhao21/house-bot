@@ -7,6 +7,8 @@ const {
     writeBatch,
 } = require("firebase/firestore");
 const { sendNotif, newMessage } = require("../src/notifications");
+const dayjs = require("dayjs");
+const { addPendingTrade } = require("../src/trades");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -91,22 +93,6 @@ module.exports = {
             return;
         }
 
-        // Trade the chores!
-        if (yours !== "nothing") {
-            you.chores.splice(yc, 1);
-            them.chores.push(yours);
-        }
-        if (theirs !== "nothing") {
-            them.chores.splice(tc, 1);
-            you.chores.push(theirs);
-        }
-
-        // Save people
-        const batch = writeBatch(db);
-        batch.set(youRef.ref, you);
-        batch.set(themRef.ref, them);
-        await batch.commit();
-
         const yd = yours === "nothing" ? "[nothing]" : yours;
         const td = theirs === "nothing" ? "[nothing]" : theirs;
 
@@ -114,19 +100,30 @@ module.exports = {
         const theirChannel = interaction.guild.channels.cache.get(
             them.notifChannel
         );
-        await sendNotif(
+        const msg = await sendNotif(
             theirChannel,
             themRef.id,
             newMessage(
-                `${you.name} traded a chore with you`,
-                `Your chore **${td}** has been traded for ${you.name}'s chore **${yd}**`,
+                `${you.name} wants to trade a chore with you`,
+                `They are offering to trade your chore **${td}** for ${you.name}'s chore **${yd}**.\nPlease reply **yes** or **no** to this message to accept or reject the trade.`,
                 0xb8e4ff,
-                "chore-trade"
+                `chore-trade-${you.name}-${them.name}`
             )
         );
 
-        interaction.reply({
-            content: `Traded your chore **${yd}** with <@${themRef.id}>'s chore **${td}**`,
+        await interaction.reply({
+            content: `Made a trade offer of your chore **${yd}** with <@${themRef.id}>'s chore **${td}**. Please notify them and have them reply to the bot with YES or NO.`,
         });
+
+        // Create the trade object
+        const tradeId = dayjs().valueOf().toString();
+        await setDoc(doc(db, "trades", tradeId), {
+            youId: youRef.id,
+            themId: themRef.id,
+            yours,
+            theirs,
+            msg: msg.id,
+        });
+        addPendingTrade(tradeId, msg.id);
     },
 };

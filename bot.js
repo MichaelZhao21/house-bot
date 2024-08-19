@@ -11,10 +11,17 @@ const { getFirestore, doc, getDoc, setDoc } = require("firebase/firestore");
 const path = require("node:path");
 const fs = require("fs");
 const { reloadAllTasks } = require("./src/notifmain");
+const { acceptTrade, loadTrading } = require("./src/trades");
 
 async function main() {
     // Create a new client instance
-    const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+    const client = new Client({
+        intents: [
+            GatewayIntentBits.Guilds,
+            GatewayIntentBits.GuildMessages,
+            GatewayIntentBits.MessageContent,
+        ],
+    });
 
     // Load firestore instance
     const app = initializeApp(config);
@@ -50,6 +57,9 @@ async function main() {
                 reloadAllTasks(guild, db, settings);
             }
         }
+
+        // Set up trading
+        loadTrading(db);
 
         console.log("Notification system ready!");
 
@@ -110,6 +120,11 @@ async function main() {
                 });
             }
         }
+    });
+
+    // Run command on message
+    client.on("messageCreate", async (interaction) => {
+        acceptTrade(db, settings, interaction);
     });
 }
 

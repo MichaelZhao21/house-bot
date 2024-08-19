@@ -42,10 +42,12 @@ async function sendNotif(channel, user, message) {
         .setTitle(message.title)
         .setDescription(message.subtitle);
 
-    channel.send({
+    const msg = await channel.send({
         content: `${userOut} ${message.title}`,
         embeds: [embed],
     });
+    
+    return msg;
 }
 
 /**
