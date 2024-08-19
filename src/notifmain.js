@@ -31,7 +31,6 @@ async function reloadAllTasks(guild, db, settings) {
     setRentNotifs(guild, db, settings);
 
     // Start the chore notification cron task
-    setChoreNotifs(guild, db, settings);
     startChoreSystem(guild, db, settings);
 
     // Start task list cleanup task
