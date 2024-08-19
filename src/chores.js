@@ -13,7 +13,6 @@ const {
 const {
     newMessage,
     sendNotif,
-    setRepeatTask,
     saveTask,
     clearTasks,
     setTask,
