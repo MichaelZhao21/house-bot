@@ -20,6 +20,11 @@ module.exports = {
                 .setDescription(
                     "Can set to false if you want to mark a chore as UNfinished"
                 )
+        )
+        .addUserOption((option) =>
+            option
+                .setName("user")
+                .setDescription("Other user's chore to finish if applicable")
         ),
 
     /**
@@ -29,6 +34,7 @@ module.exports = {
      */
     async execute(interaction, db) {
         const name = interaction.options.getString("name");
+        const otherUser = interaction.options.getUser("user");
 
         // Get alternative option if defined
         const fOp = interaction.options.getBoolean("finished");
@@ -37,7 +43,9 @@ module.exports = {
         const date = dayjs().tz("America/Chicago").day(0).format("MM-DD-YYYY");
 
         // Get user
-        let personRef = await getDoc(doc(db, "people", interaction.user.id));
+        let personRef = await getDoc(
+            doc(db, "people", otherUser ? otherUser.id : interaction.user.id)
+        );
         if (!personRef.exists()) {
             interaction.reply(
                 "People who are not part of the house cannot finish chores!"
