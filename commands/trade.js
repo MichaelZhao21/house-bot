@@ -107,7 +107,6 @@ module.exports = {
                 `${you.name} wants to trade a chore with you`,
                 `They are offering to trade your chore **${td}** for ${you.name}'s chore **${yd}**.\nPlease reply **yes** or **no** to this message to accept or reject the trade.`,
                 0xb8e4ff,
-                `chore-trade-${you.name}-${them.name}`
             )
         );
 

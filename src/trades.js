@@ -103,8 +103,7 @@ async function acceptTrade(db, settings, interaction) {
             newMessage(
                 `${them.name} **rejected** your chore trade request`,
                 `Your chore **${yd}** has **NOT** been traded for ${them.name}'s chore **${td}**`,
-                0xb8e4ff,
-                "chore-trade"
+                0xb8e4ff
             )
         );
 
@@ -166,8 +165,7 @@ async function acceptTrade(db, settings, interaction) {
         newMessage(
             `${them.name} finished a chore trade with you`,
             `Your chore **${yd}** has been traded for ${them.name}'s chore **${td}**`,
-            0xb8e4ff,
-            "chore-trade"
+            0xb8e4ff
         )
     );
 

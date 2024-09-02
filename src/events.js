@@ -7,7 +7,12 @@ const {
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
-const { sendNotif, setRepeatTask, newMessage } = require("./notifications");
+const {
+    sendNotif,
+    newMessage,
+    setTask,
+    clearTasks,
+} = require("./notifications");
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -47,14 +52,14 @@ async function cleanAndGetEvents(db) {
  * @param {Object} event Event object, with an ID
  */
 function setEventAlarm(event, channel) {
+    clearTasks(event.id + "-repeat");
+
     // Create list of times
     const times = [];
     const now = dayjs().tz("America/Chicago");
     const eventTime = dayjs(event.time).tz("America/Chicago");
-    if (now.isBefore(eventTime.subtract(60, "minutes")))
-        times.push(eventTime.subtract(60, "minutes"));
-    if (now.isBefore(eventTime.subtract(10, "minutes")))
-        times.push(eventTime.subtract(10, "minutes"));
+    times.push(eventTime.subtract(60, "minutes"));
+    times.push(eventTime.subtract(10, "minutes"));
     times.push(eventTime);
 
     // Create list of messages
@@ -65,8 +70,7 @@ function setEventAlarm(event, channel) {
             newMessage(
                 `Event in 1 hour: **${event.title}** (${time})`,
                 event.subtitle,
-                0xfbfc9f,
-                event.id + "-t60"
+                0xfbfc9f
             )
         );
     if (now.isBefore(eventTime.subtract(10, "minutes")))
@@ -74,16 +78,14 @@ function setEventAlarm(event, channel) {
             newMessage(
                 `Event in 10 mins: **${event.title}** (${time})`,
                 event.subtitle,
-                0xffb330,
-                event.id + "-t10"
+                0xffb330
             )
         );
     messages.push(
         newMessage(
             `Event NOW: **${event.title}** (${time})`,
             event.subtitle,
-            0xff3636,
-            event.id
+            0xff3636
         )
     );
 
@@ -93,7 +95,9 @@ function setEventAlarm(event, channel) {
     };
 
     // Set the repeating task!
-    setRepeatTask(times, eventAlarm, event.id + "-repeat", 0);
+    times.forEach((t, i) => {
+        setTask(t, eventAlarm.bind(i), event.id + "-repeat", 0);
+    });
 }
 
 module.exports = {

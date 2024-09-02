@@ -19,10 +19,9 @@ let taskList = [];
  * @param {string} title Title of the notification
  * @param {string} subtitle Subtitle of the notification
  * @param {number} color Color of the embed
- * @param {string} id ID of the message
  */
-function newMessage(title, subtitle, color, id) {
-    return { title, subtitle, color, id };
+function newMessage(title, subtitle, color) {
+    return { title, subtitle, color };
 }
 
 /**
@@ -48,27 +47,6 @@ async function sendNotif(channel, user, message) {
     });
     
     return msg;
-}
-
-/**
- * Starts a cron job to notify a user about something
- *
- * @param {Object} channel Discord channel to send message in
- * @param {string} user User ID or "everyone" to ping
- * @param {number} time UNIX timestamp
- * @param {Object} message Message object
- */
-function setAlarm(channel, user, time, message) {
-    // Define cron task for a certain time
-    const task = Cron(
-        dayjs(time).tz("America/Chicago").toISOString(),
-        {
-            timezone: "America/Chicago",
-            name: message.id,
-        },
-        sendNotif.bind(this, channel, user, message)
-    );
-    taskList.push(task);
 }
 
 /**
@@ -179,7 +157,6 @@ function stopAllTasks() {
 module.exports = {
     newMessage,
     sendNotif,
-    setAlarm,
     setRepeatTask,
     saveTask,
     clearTasks,

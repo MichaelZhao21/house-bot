@@ -52,7 +52,6 @@ module.exports = {
                 "Please take out the recycling",
                 "Do this ASAP or if unable please notify someone else to do it.",
                 0x5e80a8,
-                "recycling"
             )
         );
 

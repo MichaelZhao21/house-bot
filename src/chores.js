@@ -167,8 +167,7 @@ async function assignChoresAndNotifs(guild, db, settings) {
                 u.chores
                     .map((c) => `- ${settings.chores.nameMap[c]} [${c}]`)
                     .join("\n"),
-            0x91d5ff,
-            `chore-info-${u.id}`
+            0x91d5ff
         );
 
         // Get the user notif channel
@@ -194,8 +193,7 @@ async function assignChoresAndNotifs(guild, db, settings) {
                     settings.chores.seasonally
                         .map((c) => `- ${settings.chores.nameMap[c]} [${c}]`)
                         .join("\n"),
-                0x91d5ff,
-                `chore-seasonal`
+                0x91d5ff
             )
         );
     }
@@ -211,6 +209,8 @@ async function assignChoresAndNotifs(guild, db, settings) {
  * @param {Object} settings Settings object
  */
 async function setChoreNotifs(guild, db, settings) {
+    await deleteChoreNotifs();
+
     // TODO: Make async promise.all
     (await getDocs(collection(db, "people"))).forEach((d) => {
         setOneChoreNotif(guild, db, settings, d);
@@ -253,8 +253,7 @@ async function setOneChoreNotif(guild, db, settings, d) {
     const message = newMessage(
         "Do your chores!",
         "This is a reminder to do your chores:\n",
-        0xa3f1ff,
-        `chore-notif-${d.id}-`
+        0xa3f1ff
     );
 
     // Add late reminder for due date
@@ -273,8 +272,7 @@ async function setOneChoreNotif(guild, db, settings, d) {
     const lateMessage = newMessage(
         "YOUR CHORES ARE **LATE**!!",
         "Please do your chores ASAP. You have been given 1 strike:\n",
-        0xc90076,
-        `chore-notif-${d.id}-late`
+        0xc90076
     );
 
     // Get the user notif channel
@@ -311,7 +309,6 @@ async function setOneChoreNotif(guild, db, settings, d) {
         cm.subtitle += user.chores
             .map((c) => `- ${settings.chores.nameMap[c]} [${c}]`)
             .join("\n");
-        cm.id += iter;
         sendNotif(channel, d.id, cm);
     };
 
