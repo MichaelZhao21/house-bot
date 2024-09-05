@@ -258,15 +258,25 @@ async function setOneChoreNotif(guild, db, settings, d) {
 
     // Add late reminder for due date
     if (dayjs().tz("America/Chicago").day() === 0) {
-        times.push(dayjs().tz("America/Chicago").day(0).hour(21).minute(0));
+        times.push(
+            dayjs()
+                .tz("America/Chicago")
+                .day(0)
+                .hour(23)
+                .minute(59)
+                .second(59)
+                .millisecond(0)
+        );
     } else {
         times.push(
             dayjs()
                 .tz("America/Chicago")
                 .add(1, "week")
                 .day(0)
-                .hour(21)
-                .minute(0)
+                .hour(23)
+                .minute(59)
+                .second(59)
+                .millisecond(0)
         );
     }
     const lateMessage = newMessage(
