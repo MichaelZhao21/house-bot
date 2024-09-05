@@ -65,22 +65,20 @@ function setEventAlarm(event, channel) {
     // Create list of messages
     const time = eventTime.format("h:mm a");
     const messages = [];
-    if (now.isBefore(eventTime.subtract(60, "minutes")))
-        messages.push(
-            newMessage(
-                `Event in 1 hour: **${event.title}** (${time})`,
-                event.subtitle,
-                0xfbfc9f
-            )
-        );
-    if (now.isBefore(eventTime.subtract(10, "minutes")))
-        messages.push(
-            newMessage(
-                `Event in 10 mins: **${event.title}** (${time})`,
-                event.subtitle,
-                0xffb330
-            )
-        );
+    messages.push(
+        newMessage(
+            `Event in 1 hour: **${event.title}** (${time})`,
+            event.subtitle,
+            0xfbfc9f
+        )
+    );
+    messages.push(
+        newMessage(
+            `Event in 10 mins: **${event.title}** (${time})`,
+            event.subtitle,
+            0xffb330
+        )
+    );
     messages.push(
         newMessage(
             `Event NOW: **${event.title}** (${time})`,
