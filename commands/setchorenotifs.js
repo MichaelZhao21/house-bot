@@ -97,14 +97,6 @@ module.exports = {
                     throw new Error();
                 }
 
-                // No alarms at or after 9 pm on Sunday (as chores are due then)
-                if (day === 0 && time.hour() >= 21) {
-                    interaction.reply(
-                        `Invalid alarm time set: ${st} -- must be before Sunday 9pm as that's when chores are due`
-                    );
-                    throw new Error();
-                }
-
                 return `${day}-${timeStr}`;
             });
 
