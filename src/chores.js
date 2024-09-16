@@ -228,6 +228,9 @@ async function setChoreNotifs(guild, db, settings) {
 async function setOneChoreNotif(guild, db, settings, d) {
     const user = d.data();
 
+    // Delete the user's chore notifs
+    clearTasks(`chore-notif-${d.id}`);
+
     // Create a list of times
     const times = user.choreNotifs
         ? user.choreNotifs.map((n) => {
