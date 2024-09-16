@@ -88,8 +88,13 @@ async function assignChoresAndNotifs(guild, db, settings) {
     }
 
     // Assign weekly, biweekly, and monthly chores
+    // Filter out duplicate sweep + mop on months
     const choreAss = Array.from({ length: total }, () => []);
-    weekly.forEach((c, i) => {
+    const filteredWeekly =
+        dayjs().tz("America/Chicago").date() <= 7
+            ? weekly.filter((w) => w !== "sweep" && w !== "mop")
+            : weekly;
+    filteredWeekly.forEach((c, i) => {
         choreAss[i % total].push(c);
     });
     if (settings.weekCount % 2 === 1) {
