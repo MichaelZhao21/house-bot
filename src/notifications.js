@@ -4,7 +4,6 @@ const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
 const objectSupport = require("dayjs/plugin/objectSupport");
-const { getDocs, collection } = require("firebase/firestore");
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -89,6 +88,9 @@ function setRepeatTask(times, func, id, iter) {
  * @param {number} iter Current iteration, used to get times[iter] and passed into function
  */
 function setTask(time, func, id, iter) {
+    // Make sure task is deleted before you set it
+    clearTasks(id);
+
     const tasak = Cron(
         dayjs(time).tz("America/Chicago").toISOString(),
         { timezone: "America/Chicago", name: `${id}-${iter}` },
