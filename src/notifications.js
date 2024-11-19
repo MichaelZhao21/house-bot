@@ -70,7 +70,7 @@ function setTask(time, func, category, secondary) {
         { timezone: "America/Chicago" },
         async () => {
             // Call function
-            await func(iter);
+            await func();
         }
     );
     saveTask(task, category, secondary);
