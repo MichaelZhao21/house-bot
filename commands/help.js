@@ -43,6 +43,10 @@ module.exports = {
                 value: "Adds custom notifications for your chores -- will KEEP the previously set notifications"
             },
             {
+                name: "/getchorenotifs",
+                value: "Shows your current notifications for your chores (in the format you would run setchorenotifs",
+            },
+            {
                 name: "/finish",
                 value: "Sets a specific chore to 'done', can also set a chore to not done",
             },
