@@ -52,7 +52,7 @@ async function cleanAndGetEvents(db) {
  * @param {Object} event Event object, with an ID
  */
 function setEventAlarm(event, channel) {
-    clearTasks(event.id + "-repeat");
+    clearTasks("events");
 
     // Create list of times
     const times = [];
@@ -94,7 +94,7 @@ function setEventAlarm(event, channel) {
 
     // Set the repeating task!
     times.forEach((t, i) => {
-        setTask(t, eventAlarm.bind(i), event.id + "-repeat", 0);
+        setTask(t, eventAlarm.bind(this, i), "events", event.id);
     });
 }
 

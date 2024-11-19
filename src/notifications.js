@@ -9,7 +9,15 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(objectSupport);
 
-// Global list to store all alarms
+// Global list of all tasks
+const taskStore = {
+    choreRepeater: null,
+    rentRepeater: null,
+    cleaner: null,
+    rent: {}, // List of users, each one with an array
+    chores: {}, // List of users, each one with an array
+    events: [], // List of event notifications
+};
 let taskList = [];
 
 /**
@@ -44,39 +52,8 @@ async function sendNotif(channel, user, message) {
         content: `${userOut} ${message.title}`,
         embeds: [embed],
     });
-    
+
     return msg;
-}
-
-/**
- * Creates a repeating task that will happen at each given timestamp until
- * no more timestamps are left. Note that if timestamps are not in order
- * this will break as it will not be able to run a task in the past.
- *
- * @param {number[]} times UNIX timestamp
- * @param {Function} func Function to run on each iteration
- * @param {string} id ID of this repeating cron task
- * @param {number} iter Current iteration, used to get times[iter] and passed into function
- */
-function setRepeatTask(times, func, id, iter) {
-    // Define cron task for a certain time
-    const task = Cron(
-        dayjs(times[iter]).tz("America/Chicago").toISOString(),
-        { timezone: "America/Chicago", name: `${id}-${iter}` },
-        async () => {
-            // Call function
-            await func(iter);
-
-            // Stop if iterations are up
-            if (iter + 1 >= times.length) {
-                return;
-            }
-
-            // Otherwise, we keep going!
-            setRepeatTask(times, func, id, iter + 1);
-        }
-    );
-    saveTask(task);
 }
 
 /**
@@ -84,49 +61,107 @@ function setRepeatTask(times, func, id, iter) {
  *
  * @param {number[]} time UNIX timestamp
  * @param {Function} func Function to run on each iteration
- * @param {string} id ID of this repeating cron task
- * @param {number} iter Current iteration, used to get times[iter] and passed into function
+ * @param {string} category Category used
+ * @param {string} secondary Secondary used
  */
-function setTask(time, func, id, iter) {
-    // Make sure task is deleted before you set it
-    clearTasks(id);
-
-    const tasak = Cron(
+function setTask(time, func, category, secondary) {
+    const task = Cron(
         dayjs(time).tz("America/Chicago").toISOString(),
-        { timezone: "America/Chicago", name: `${id}-${iter}` },
+        { timezone: "America/Chicago" },
         async () => {
             // Call function
             await func(iter);
         }
     );
-    saveTask(tasak);
+    saveTask(task, category, secondary);
 }
 
 /**
  * Add a task to the task list
  *
  * @param {Cron} task
+ * @param {string} category Category used
+ * @param {string} secondary Secondary used
  */
-function saveTask(task) {
-    taskList.push(task);
+function saveTask(task, category, secondary) {
+    switch (category) {
+        case "chore-repeater":
+            taskStore.choreRepeater = task;
+            break;
+        case "rent-repeater":
+            taskStore.rentRepeater = task;
+            break;
+        case "cleaner":
+            taskStore.cleaner = task;
+            break;
+        case "events":
+            taskStore.events.push(task);
+            break;
+        default:
+            if (category !== "rent" && category !== "chores") throw new Error("Invalid category passed into saveTask: " + category);
+
+            if (!taskStore[category][secondary]) taskStore[category][secondary] = [];
+            taskStore[category][secondary].push(task);
+            break;
+    }
 }
 
 /**
- * Clear all tasks with the given prefix
+ * Clear all tasks in a category
  *
- * @param {string} prefix
+ * @param {string} category
+ * @param {string} secondary
  */
-function clearTasks(prefix) {
-    const newTaskList = [];
-    taskList.forEach((t) => {
-        if (t.name.indexOf(prefix) === 0) {
-            t.stop();
-        } else {
-            newTaskList.push(t);
-        }
-    });
+function clearTasks(category, secondary) {
+    // If nothing defined:
+    if (!category && !secondary) {
+        // Stop all tasks
+        if (taskStore.choreRepeater) taskStore.choreRepeater.stop();
+        if (taskStore.rentRepeater) taskStore.rentRepeater.stop();
+        Object.values(taskStore.chores).forEach(c => c.forEach(cv => cv.stop()));
+        Object.values(taskStore.rent).forEach(r => r.forEach(rv => rv.stop()));
+        Object.values(taskStore.events).forEach(e => e.stop());
 
-    taskList = newTaskList;
+        // Remove all tasks
+        taskStore.choreRepeater = null;
+        taskStore.rentRepeater = null;
+        taskStore.chores = {};
+        taskStore.rent = {};
+        taskStore.events = [];
+
+        return;
+    }
+
+    // If secondary not defined, clear all of one:
+    if (!secondary) {
+        switch (category) {
+            case "rent":
+                Object.values(taskStore.rent).forEach(r => r.forEach(rv => rv.stop()));
+                taskStore.rent = {};
+                break;
+            case "chores":
+                Object.values(taskStore.chores).forEach(c => c.forEach(cv => cv.stop()));
+                taskStore.chores = {};
+                break;
+            case "events":
+                Object.values(taskStore.events).forEach(e => e.stop());
+                taskStore.events = [];
+                break;
+            default:
+                throw new Error("Invalid category passed ot clearTasks: " + category);
+                break;
+        }
+
+        return;
+    }
+
+    // Make sure that secondary only defined for rent/chores
+    if (category !== "rent" && category !== "chores") throw new Error("Category can only be passed with secondary if it is 'rent' or 'chores': " + category);
+
+    // Clear things
+    if (taskStore[category][secondary])
+        taskStore[category][secondary].forEach(c => c.stop());
+    taskStore[category][secondary] = [];
 }
 
 /**
@@ -146,7 +181,7 @@ function cleanTaskListTask() {
             );
         }
     );
-    saveTask(task);
+    saveTask(task, "cleaner");
 }
 
 /**
@@ -159,7 +194,6 @@ function stopAllTasks() {
 module.exports = {
     newMessage,
     sendNotif,
-    setRepeatTask,
     saveTask,
     clearTasks,
     cleanTaskListTask,

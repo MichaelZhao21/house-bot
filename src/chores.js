@@ -47,7 +47,7 @@ async function startChoreSystem(guild, db, settings) {
         { timezone: "America/Chicago", name: "chore-repeater" },
         assignChoresAndNotifs.bind(this, guild, db, settings)
     );
-    saveTask(task);
+    saveTask(task, "chore-repeater");
 }
 
 const seasonalMonths = [0, 3, 6, 9];
@@ -170,9 +170,9 @@ async function assignChoresAndNotifs(guild, db, settings) {
         const message = newMessage(
             `You have ${u.chores.length} chores this week`,
             "Here are your chores:\n" +
-                u.chores
-                    .map((c) => `- ${settings.chores.nameMap[c]} [${c}]`)
-                    .join("\n"),
+            u.chores
+                .map((c) => `- ${settings.chores.nameMap[c]} [${c}]`)
+                .join("\n"),
             0x91d5ff
         );
 
@@ -196,9 +196,9 @@ async function assignChoresAndNotifs(guild, db, settings) {
             newMessage(
                 "It's time for seasonal chores!",
                 "Please assign the following chores:\n" +
-                    settings.chores.seasonally
-                        .map((c) => `- ${settings.chores.nameMap[c]} [${c}]`)
-                        .join("\n"),
+                settings.chores.seasonally
+                    .map((c) => `- ${settings.chores.nameMap[c]} [${c}]`)
+                    .join("\n"),
                 0x91d5ff
             )
         );
@@ -235,27 +235,27 @@ async function setOneChoreNotif(guild, db, settings, d) {
     const user = d.data();
 
     // Delete the user's chore notifs
-    clearTasks(`chore-notif-${d.id}`);
+    clearTasks('chores', d.id);
 
     // Create a list of times
     const times = user.choreNotifs
         ? user.choreNotifs.map((n) => {
-              const split = n.split("-");
-              const day = Number(split[0]);
+            const split = n.split("-");
+            const day = Number(split[0]);
 
-              // Return smth else if setting on sunday (special case lmao)
-              if (dayjs().tz("America/Chicago").day() === 0) {
-                  return dayjs
-                      .tz(split[1], "HH:mm", "America/Chicago")
-                      .day(day)
-                      .add(day === 0 ? 0 : -1, "weeks");
-              }
+            // Return smth else if setting on sunday (special case lmao)
+            if (dayjs().tz("America/Chicago").day() === 0) {
+                return dayjs
+                    .tz(split[1], "HH:mm", "America/Chicago")
+                    .day(day)
+                    .add(day === 0 ? 0 : -1, "weeks");
+            }
 
-              return dayjs
-                  .tz(split[1], "HH:mm", "America/Chicago")
-                  .day(day)
-                  .add(day === 0 ? 1 : 0, "weeks");
-          })
+            return dayjs
+                .tz(split[1], "HH:mm", "America/Chicago")
+                .day(day)
+                .add(day === 0 ? 1 : 0, "weeks");
+        })
         : [];
 
     // Create a list of messages
@@ -311,7 +311,7 @@ async function setOneChoreNotif(guild, db, settings, d) {
         }
 
         // If late, send late notif
-        if (iter + 1 === times.length) {
+        if (iter === times.length - 1) {
             // Give strike
             user.strikes += 1;
             await setDoc(doc(db, "people", d.id), user);
@@ -333,12 +333,12 @@ async function setOneChoreNotif(guild, db, settings, d) {
 
     // Set the repeating task!
     times.forEach((t, i) => {
-        setTask(t, notifAlarm.bind(this, i), `chore-notif-${d.id}`, i);
+        setTask(t, notifAlarm.bind(this, i), "chores", d.id);
     });
 }
 
 async function deleteChoreNotifs() {
-    return clearTasks("chore-notif");
+    return clearTasks("chores");
 }
 
 module.exports = {

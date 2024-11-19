@@ -31,7 +31,7 @@ async function setRentNotifs(guild, db, settings) {
         { timezone: "America/Chicago", name: "rent-repeater" },
         createRepeatingRentNotifs.bind(this, guild, db, settings)
     );
-    saveTask(task);
+    saveTask(task, "rent-repeater");
 }
 
 /**
@@ -42,7 +42,7 @@ async function setRentNotifs(guild, db, settings) {
  * @param {Object} settings Settings object
  */
 async function createRepeatingRentNotifs(guild, db, settings) {
-    await deleteRentNotifs();
+    clearTasks("rent");
 
     // Get all users
     (await getDocs(collection(db, "people"))).forEach((d) => {
@@ -115,12 +115,8 @@ async function setOneRentNotif(guild, db, settings, d) {
 
     // Set the repeating task!
     times.forEach((t, i) => {
-        setTask(t, rentAlarm.bind(this, i), `rent-notif-${d.id}`, i);
+        setTask(t, rentAlarm.bind(this, i), 'rent', d.id);
     });
-}
-
-async function deleteRentNotifs() {
-    return clearTasks("rent-notif");
 }
 
 module.exports = {

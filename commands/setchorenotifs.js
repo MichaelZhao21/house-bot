@@ -104,7 +104,7 @@ module.exports = {
             await setDoc(personRef.ref, person);
 
             // Restart notifications
-            clearTasks(`chore-notif-${personRef.id}`);
+            clearTasks('chores', personRef.id);
             setOneChoreNotif(interaction.guild, db, settings, await getDoc(personRef.ref));
 
             interaction.reply({
