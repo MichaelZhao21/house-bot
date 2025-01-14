@@ -58,13 +58,21 @@ function setEventAlarm(event, channel) {
     const times = [];
     const now = dayjs().tz("America/Chicago");
     const eventTime = dayjs(event.time).tz("America/Chicago");
-    times.push(eventTime.subtract(60, "minutes"));
+    times.push(eventTime.subtract(1, "day"));
+    times.push(eventTime.subtract(1, "hour"));
     times.push(eventTime.subtract(10, "minutes"));
     times.push(eventTime);
 
     // Create list of messages
     const time = eventTime.format("h:mm a");
     const messages = [];
+    messages.push(
+        newMessage(
+            `Event in 1 day: **${event.title}** (${time})`,
+            event.subtitle,
+            0xcfff99
+        )
+    )
     messages.push(
         newMessage(
             `Event in 1 hour: **${event.title}** (${time})`,
