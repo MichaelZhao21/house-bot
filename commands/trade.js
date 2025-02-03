@@ -69,6 +69,12 @@ module.exports = {
         }
         let them = themRef.data();
 
+        // PREVENT YOU FROM TRADING WITH YOURSELF
+        if (youRef.id === themRef.id) {
+            interaction.reply("You cannot trade with yourself!");
+            return;
+        }
+
         const nameMapKeys = Object.keys(settings.chores.nameMap);
 
         // Make sure chores exist
