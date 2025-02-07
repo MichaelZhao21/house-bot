@@ -312,8 +312,8 @@ async function setOneChoreNotif(guild, db, settings, d) {
 
         // If late, send late notif
         if (iter === times.length - 1) {
-            // Give strike
-            user.strikes += 1;
+            // Give strikes for each chore not done
+            user.strikes += user.chores.length;
             await setDoc(doc(db, "people", d.id), user);
 
             lateMessage.subtitle += user.chores
