@@ -88,26 +88,25 @@ async function assignChoresAndNotifs(guild, db, settings) {
     }
 
     // Assign weekly, biweekly, and monthly chores
-    // Filter out duplicate sweep + mop on months
+    // Filter out duplicate sweep + mop on months + biweekly
     // TODO: extract hardcoded duplicate chores to setting
     const choreAss = Array.from({ length: total }, () => []);
-    const filteredWeekly =
-        dayjs().tz("America/Chicago").date() <= 7
-            ? weekly.filter((w) => w !== "sweep" && w !== "mop" && w !== "counter")
-            : weekly;
-    filteredWeekly.forEach((c, i) => {
-        choreAss[i % total].push(c);
-    });
-    if (settings.weekCount % 2 === 1) {
-        biweekly.forEach((c, i) => {
-            choreAss[(i + t13) % total].push(c);
-        });
-    }
+    let filteredWeekly = weekly;
     if (dayjs().tz("America/Chicago").date() <= 7) {
+        filteredWeekly = filteredWeekly.filter((w) => w !== "sweep" && w !== "mop");
         monthly.forEach((c, i) => {
             choreAss[(i + t23) % total].push(c);
         });
     }
+    if (settings.weekCount % 2 === 1) {
+        filteredWeekly = filteredWeekly.filter((w) => w !== "counter");
+        biweekly.forEach((c, i) => {
+            choreAss[(i + t13) % total].push(c);
+        });
+    }
+    filteredWeekly.forEach((c, i) => {
+        choreAss[i % total].push(c);
+    });
 
     // Assign to all users
     // Also split all people that are/aren't on vacation
