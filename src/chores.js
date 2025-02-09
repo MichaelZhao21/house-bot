@@ -93,7 +93,7 @@ async function assignChoresAndNotifs(guild, db, settings) {
     const choreAss = Array.from({ length: total }, () => []);
     const filteredWeekly =
         dayjs().tz("America/Chicago").date() <= 7
-            ? weekly.filter((w) => w !== "sweep" && w !== "mop")
+            ? weekly.filter((w) => w !== "sweep" && w !== "mop" && w !== "counter")
             : weekly;
     filteredWeekly.forEach((c, i) => {
         choreAss[i % total].push(c);
