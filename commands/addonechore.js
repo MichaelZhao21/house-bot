@@ -22,8 +22,9 @@ module.exports = {
      * Execution script
      * @param {CommandInteraction} interaction
      * @param {Firestore} db
+     * @param {Object} settings
      */
-    async execute(interaction, db) {
+    async execute(interaction, db, settings) {
         const name = interaction.options.getString("name");
         const userObj = interaction.options.getUser("user");
 
@@ -38,10 +39,6 @@ module.exports = {
             return;
         }
         let user = personRef.data();
-
-        // Get settings
-        let settingsRef = await getDoc(doc(db, "settings", "0"));
-        let settings = settingsRef.data();
 
         // Get the keys of the nameMap
         let keys = Object.keys(settings.chores.nameMap);
