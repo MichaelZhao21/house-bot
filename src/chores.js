@@ -289,7 +289,7 @@ async function setOneChoreNotif(guild, db, settings, d) {
     }
     const lateMessage = newMessage(
         "YOUR CHORES ARE **LATE**!!",
-        "Please do your chores ASAP. You have been given 1 strike:\n",
+        "Please do your chores ASAP. You have been given %STRIKES% strike:\n",
         0xc90076
     );
 
@@ -315,6 +315,7 @@ async function setOneChoreNotif(guild, db, settings, d) {
             user.strikes += user.chores.length;
             await setDoc(doc(db, "people", d.id), user);
 
+            lateMessage.subtitle = lateMessage.subtitle.replace('%STRIKES%', user.chores.length);
             lateMessage.subtitle += user.chores
                 .map((c) => `- ${settings.chores.nameMap[c]} [${c}]`)
                 .join("\n");
