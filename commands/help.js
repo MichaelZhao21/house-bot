@@ -43,6 +43,10 @@ module.exports = {
                 value: "Adds custom notifications for your chores -- will KEEP the previously set notifications"
             },
             {
+                name: "/removechorenotifs",
+                value: "Removes custom notifications for your chores -- will KEEP the previously set notifications"
+            },
+            {
                 name: "/getchorenotifs",
                 value: "Shows your current notifications for your chores (in the format you would run setchorenotifs",
             },
@@ -69,6 +73,10 @@ module.exports = {
             {
                 name: "/addevent",
                 value: "Add an event, will remind people 1 hr before, 10 mins before, and on the dot",
+            },
+            {
+                name: "/strikes",
+                value: "Shows the number of strikes you have, and you can also see everyone's strikes",
             },
             {
                 name: "/vacation",
