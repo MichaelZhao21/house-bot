@@ -33,7 +33,7 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor(0xaf99ff)
-                .setTitle("All chores")
+                .setTitle("All strikes")
                 .setDescription("Here is a list of strikes for everyone")
                 .setFields(people.map((person) => ({
                     name: `${person.name} (${person.username})`,
@@ -57,7 +57,7 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor(0xaf99ff)
-            .setTitle("Your chores for this week")
+            .setTitle("Your strikes :(")
             .setDescription(`You have **${user.strikes}** strikes.`);
         interaction.reply({ embeds: [embed] });
     },
