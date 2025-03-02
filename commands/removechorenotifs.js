@@ -34,9 +34,9 @@ function getDay(input) {
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("addchorenotifs")
+        .setName("removechorenotifs")
         .setDescription(
-            "Adds a notification to your own notifications for your chores"
+            "Removes a notification to your own notifications for your chores"
         )
         .addStringOption((option) =>
             option
@@ -101,7 +101,9 @@ module.exports = {
             return `${day}-${timeStr}`;
         });
 
-        const set = new Set([...person.choreNotifs, ...parsed]);
+        // Remove the notifications from the list
+        const set = new Set(person.choreNotifs);
+        parsed.forEach((p) => set.delete(p));
         person.choreNotifs = Array.from(set);
         await setDoc(personRef.ref, person);
 
@@ -115,7 +117,7 @@ module.exports = {
         );
 
         interaction.reply({
-            content: `Set chore notifications (day-HHmm): [${person.choreNotifs.join(
+            content: `Your new chore notifications (day-HHmm): [${person.choreNotifs.join(
                 ", "
             )}]`,
         });
