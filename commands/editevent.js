@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
-const { Firestore, setDoc, doc } = require("firebase/firestore");
+const { Firestore, setDoc, doc, getDoc } = require("firebase/firestore");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
@@ -12,9 +12,9 @@ dayjs.extend(objectSupport);
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("addevent")
+        .setName("editevent")
         .setDescription(
-            "Creates a new event. Any field not set will default to the current (eg. this month)"
+            "Updates an existing event by ID. Any field not set will not be updated."
         )
         .addStringOption((option) =>
             option
@@ -56,20 +56,32 @@ module.exports = {
         // Current time
         const now = dayjs().tz("America/Chicago");
 
-        // Get fields
+        // Get previous event
         const id = interaction.options.getString("id");
-        const year = interaction.options.getInteger("year") ?? now.get("year");
+        const prevEvent = await getDoc(doc(db, "events", id));
+        if (!prevEvent.exists()) {
+            interaction.reply(
+                `Event with ID **${id}** does not exist! Please check the ID and try again.`
+            );
+            return;
+        }
+        const prevData = prevEvent.data();
+
+        const prevTime = dayjs(prevData.time).tz("America/Chicago");
+
+        // Get fields
+        const year = interaction.options.getInteger("year") ?? prevTime.year();
         const month =
-            interaction.options.getInteger("month") ?? now.get("month") + 1;
-        const day = interaction.options.getInteger("day") ?? now.get("date");
-        const hour = interaction.options.getInteger("hour") ?? now.get("hour");
+            interaction.options.getInteger("month") ?? prevTime.month() + 1;
+        const day = interaction.options.getInteger("day") ?? prevTime.date();
+        const hour = interaction.options.getInteger("hour") ?? prevTime.hour();
         const minute =
-            interaction.options.getInteger("minute") ?? now.get("minute");
+            interaction.options.getInteger("minute") ?? prevTime.minute();
         const second = 0;
         const title =
-            interaction.options.getString("title") ?? "[unnamed event]";
+            interaction.options.getString("title") ?? prevData.title;
         const subtitle =
-            interaction.options.getString("subtitle") ?? "[no description]";
+            interaction.options.getString("subtitle") ?? prevData.subtitle;
 
         // Calculate time and make sure it's valid
         const future = dayjs({
@@ -95,7 +107,7 @@ module.exports = {
             time: future.utc().valueOf(),
         };
 
-        // Add the event to the database
+        // Update the event in the database
         await setDoc(doc(db, "events", id), newEvent);
 
         // Set the alarm for the event
@@ -109,13 +121,9 @@ module.exports = {
             return;
         }
 
-        console.log("?");
-
         // Tell the user
-        await interaction.reply(
+        interaction.reply(
             `Event **${title}** (${id}) will happen <t:${futureStr}:R>!`
         );
-
-        console.log("huh")
     },
 };

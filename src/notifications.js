@@ -16,7 +16,7 @@ const taskStore = {
     cleaner: null,
     rent: {}, // List of users, each one with an array
     chores: {}, // List of users, each one with an array
-    events: [], // List of event notifications
+    events: {}, // List of event notifications, each one with an ID
 };
 let taskList = [];
 
@@ -94,11 +94,8 @@ function saveTask(task, category, secondary) {
         case "cleaner":
             taskStore.cleaner = task;
             break;
-        case "events":
-            taskStore.events.push(task);
-            break;
         default:
-            if (category !== "rent" && category !== "chores") throw new Error("Invalid category passed into saveTask: " + category);
+            if (category !== "rent" && category !== "chores" && category !== "events") throw new Error("Invalid category passed into saveTask: " + category);
 
             if (!taskStore[category][secondary]) taskStore[category][secondary] = [];
             taskStore[category][secondary].push(task);
@@ -120,6 +117,7 @@ function clearTasks(category, secondary) {
         if (taskStore.rentRepeater) taskStore.rentRepeater.stop();
         Object.values(taskStore.chores).forEach(c => c.forEach(cv => cv.stop()));
         Object.values(taskStore.rent).forEach(r => r.forEach(rv => rv.stop()));
+        Object.values(taskStore.events).forEach(r => r.forEach(rv => rv.stop()));
         Object.values(taskStore.events).forEach(e => e.stop());
 
         // Remove all tasks
@@ -127,7 +125,7 @@ function clearTasks(category, secondary) {
         taskStore.rentRepeater = null;
         taskStore.chores = {};
         taskStore.rent = {};
-        taskStore.events = [];
+        taskStore.events = {};
 
         return;
     }
@@ -144,19 +142,15 @@ function clearTasks(category, secondary) {
                 taskStore.chores = {};
                 break;
             case "events":
-                Object.values(taskStore.events).forEach(e => e.stop());
-                taskStore.events = [];
+                Object.values(taskStore.events).forEach(c => c.forEach(cv => cv.stop()));
+                taskStore.events = {};
                 break;
             default:
-                throw new Error("Invalid category passed ot clearTasks: " + category);
-                break;
+                throw new Error("Invalid category passed to clearTasks: " + category);
         }
 
         return;
     }
-
-    // Make sure that secondary only defined for rent/chores
-    if (category !== "rent" && category !== "chores") throw new Error("Category can only be passed with secondary if it is 'rent' or 'chores': " + category);
 
     // Clear things
     if (taskStore[category][secondary])

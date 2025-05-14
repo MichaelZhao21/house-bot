@@ -52,11 +52,10 @@ async function cleanAndGetEvents(db) {
  * @param {Object} event Event object, with an ID
  */
 function setEventAlarm(event, channel) {
-    clearTasks("events");
+    clearTasks("events", event.id);
 
     // Create list of times
     const times = [];
-    const now = dayjs().tz("America/Chicago");
     const eventTime = dayjs(event.time).tz("America/Chicago");
     times.push(eventTime.subtract(1, "day"));
     times.push(eventTime.subtract(1, "hour"));

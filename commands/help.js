@@ -75,6 +75,10 @@ module.exports = {
                 value: "Add an event, will remind people 1 hr before, 10 mins before, and on the dot",
             },
             {
+                name: "/editevent",
+                value: "Edits an event using the event ID; enter all fields that need to be updated",
+            },
+            {
                 name: "/strikes",
                 value: "Shows the number of strikes you have, and you can also see everyone's strikes",
             },
