@@ -14,6 +14,7 @@ const taskStore = {
     choreRepeater: null,
     rentRepeater: null,
     cleaner: null,
+    kitchenSweep: null,
     rent: {}, // List of users, each one with an array
     chores: {}, // List of users, each one with an array
     events: {}, // List of event notifications, each one with an ID
@@ -93,6 +94,9 @@ function saveTask(task, category, secondary) {
             break;
         case "cleaner":
             taskStore.cleaner = task;
+            break;
+        case "kitchen-sweep":
+            taskStore.kitchenSweep = task;
             break;
         default:
             if (category !== "rent" && category !== "chores" && category !== "events") throw new Error("Invalid category passed into saveTask: " + category);
@@ -179,6 +183,40 @@ function cleanTaskListTask() {
 }
 
 /**
+ * Cron task that will remind users to sweep the
+ * kitchen floor once every 2 days at noon
+ */
+async function setKitchenSweepTask(guild, db, settings) {
+    const channel = await guild.channels.fetch(settings.notifChannel);
+    const task = Cron(
+        "0 12 */2 * *",
+        { timezone: "America/Chicago", name: "kitchen-sweep" },
+        async () => {
+            // Find user who has curr trash number
+            const q = query(
+                collection(db, "people"),
+                where("number", "==", settings.kitchenNum),
+                limit(1)
+            );
+            const userRef = (await getDocs(q)).docs[0];
+
+            settings.kitchenNum = (settings.kitchenNum + 1) % settings.total;
+
+            await sendNotif(
+                channel,
+                userRef.id,
+                newMessage(
+                    "Please sweep the kitchen floor",
+                    "It's your turn to sweep the kitchen floor! Please do it as soon as possible :D",
+                    0x5e80a8,
+                )
+            );
+        }
+    );
+    saveTask(task, "kitchen-sweep")
+}
+
+/**
  * Literally stops ALL running tasks
  */
 function stopAllTasks() {
@@ -193,4 +231,5 @@ module.exports = {
     cleanTaskListTask,
     stopAllTasks,
     setTask,
+    setKitchenSweepTask,
 };

@@ -1,6 +1,6 @@
 const { setChoreNotifs, startChoreSystem } = require("./chores");
 const { cleanAndGetEvents, setEventAlarm } = require("./events");
-const { stopAllTasks, cleanTaskListTask } = require("./notifications");
+const { stopAllTasks, cleanTaskListTask, setKitchenSweepTask } = require("./notifications");
 const { setRentNotifs } = require("./rent");
 
 /**
@@ -32,6 +32,9 @@ async function reloadAllTasks(guild, db, settings) {
 
     // Start the chore notification cron task
     startChoreSystem(guild, db, settings);
+
+    // Start kitchen sweep task
+    setKitchenSweepTask(guild, db, settings);
 
     // Start task list cleanup task
     cleanTaskListTask();

@@ -30,6 +30,7 @@ module.exports = {
         settings.total = users.size;
         settings.trashNum = 0;
         settings.recyclingNum = 0;
+        settings.kitchenNum = 0;
         batch.update(doc(db, "settings", "0"), settings);
 
         await batch.commit();
