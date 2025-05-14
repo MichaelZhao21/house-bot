@@ -22,3 +22,10 @@ Create a Discord app/bot, generate a token, and add a field "discordToken" with 
 
 ## Execution
 
+```
+npm run start
+```
+
+# Disabling Strikes
+
+The strike system can be disabled (and is in the repo right now) in the 2 files: `src/chores.js` and `src/rent.js`. At the top of the page, change the `DISABLED_STRIKES` constant to `true`. If you would like to re-enable the strike system, change that constant to `false`.

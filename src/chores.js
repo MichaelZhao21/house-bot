@@ -28,6 +28,9 @@ dayjs.extend(timezone);
 dayjs.extend(customParseFormat);
 dayjs.extend(objectSupport);
 
+// TEMP: Disable strike system here!! (set to false if you want to use it)
+const DISABLE_STRIKES = true;
+
 /**
  * Sets up a cron task to assign chores and
  * create notifications for chores
@@ -287,11 +290,14 @@ async function setOneChoreNotif(guild, db, settings, d) {
                 .millisecond(0)
         );
     }
-    const lateMessage = newMessage(
+    let lateMessage = newMessage(
         "YOUR CHORES ARE **LATE**!!",
         "Please do your chores ASAP. You have been given %STRIKES% strike:\n",
         0xc90076
     );
+    if (DISABLE_STRIKES) {
+        lateMessage = newMessage("Reminder to finish your chores!", "It is the end of the week, so here's a reminder to finish your chores. Please let the roommates know if you are unable to, and if you've done it already thank you! Here are the chores you have this week:\n", 0xffb5e0);
+    }
 
     // Get the user notif channel
     const channel = await guild.channels.fetch(user.notifChannel);
@@ -312,10 +318,12 @@ async function setOneChoreNotif(guild, db, settings, d) {
         // If late, send late notif
         if (iter === times.length - 1) {
             // Give strikes for each chore not done
-            user.strikes += user.chores.length;
-            await setDoc(doc(db, "people", d.id), user);
+            if (!DISABLE_STRIKES && user.chores.length > 0) {
+                user.strikes += user.chores.length;
+                await setDoc(doc(db, "people", d.id), user);
+                lateMessage.subtitle = lateMessage.subtitle.replace('%STRIKES%', user.chores.length);
+            }
 
-            lateMessage.subtitle = lateMessage.subtitle.replace('%STRIKES%', user.chores.length);
             lateMessage.subtitle += user.chores
                 .map((c) => `- ${settings.chores.nameMap[c]} [${c}]`)
                 .join("\n");

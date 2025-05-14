@@ -12,6 +12,10 @@ const dayjs = require("dayjs");
 const timezone = require("dayjs/plugin/timezone");
 
 dayjs.extend(timezone);
+
+// TEMP: Disable strike system here!! (set to false if you want to use it)
+const DISABLE_STRIKES = true;
+
 /**
  * Sets up a cron task to create notifications each
  * month for rent.
@@ -78,7 +82,7 @@ async function setOneRentNotif(guild, db, settings, d) {
         newMessage("Rent due **IMMEDIATELY**", subtitle, 0xff390d),
         newMessage(
             "Rent is **LATE**",
-            subtitle + " Which is now late. You will be given a strike.",
+            subtitle + " Which is now late." + (DISABLE_STRIKES ? "Please send it as soon as possible!" : "You will be given a strike."),
             0xbf0254
         ),
     ];
@@ -103,7 +107,7 @@ async function setOneRentNotif(guild, db, settings, d) {
         if (user.paid[neow] >= total) return;
 
         // If rent is late (last notif), give strike
-        if (iter + 1 === messages.length) {
+        if (iter + 1 === messages.length && !DISABLE_STRIKES) {
             // Give strike
             user.strikes += 1;
             await setDoc(doc(db, "people", d.id), user);
