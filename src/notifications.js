@@ -187,7 +187,6 @@ function cleanTaskListTask() {
  * kitchen floor once every 2 days at noon
  */
 async function setKitchenSweepTask(guild, db, settings) {
-    const channel = await guild.channels.fetch(settings.notifChannel);
     const task = Cron(
         "0 12 */2 * *",
         { timezone: "America/Chicago", name: "kitchen-sweep" },
@@ -199,9 +198,11 @@ async function setKitchenSweepTask(guild, db, settings) {
                 limit(1)
             );
             const userRef = (await getDocs(q)).docs[0];
+            const user =  userRef.data();
 
             settings.kitchenNum = (settings.kitchenNum + 1) % settings.total;
 
+            const channel = await guild.channels.fetch(user.notifChannel);
             await sendNotif(
                 channel,
                 userRef.id,
