@@ -1,5 +1,12 @@
 const { EmbedBuilder } = require("discord.js");
 const { Cron } = require("croner");
+const {
+    query,
+    collection,
+    where,
+    limit,
+    getDocs,
+} = require("firebase/firestore");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
@@ -198,7 +205,7 @@ async function setKitchenSweepTask(guild, db, settings) {
                 limit(1)
             );
             const userRef = (await getDocs(q)).docs[0];
-            const user =  userRef.data();
+            const user = userRef.data();
 
             settings.kitchenNum = (settings.kitchenNum + 1) % settings.total;
 
@@ -209,7 +216,7 @@ async function setKitchenSweepTask(guild, db, settings) {
                 newMessage(
                     "Please sweep the kitchen floor",
                     "It's your turn to sweep the kitchen floor! Please do it as soon as possible :D",
-                    0x5e80a8,
+                    0x96c6ff,
                 )
             );
         }
