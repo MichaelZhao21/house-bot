@@ -53,8 +53,15 @@ module.exports = {
         } else {
             mod = "Removed"
             const idx = person.chores.indexOf(name);
-            if (idx !== -1) person.chores.splice(idx); 
+            if (idx !== -1) person.chores.splice(idx);
+            else {
+                interaction.reply(`Chore **${name}** not found in user's chore list!`);
+                return;
+            }
         }
+
+        // Set doc
+        await setDoc(doc(db, "people", user.id), person);
 
         interaction.reply({
             content: `${mod} chore **${name}** from ${user}`,
