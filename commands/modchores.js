@@ -49,11 +49,11 @@ module.exports = {
         // Modify list
         let mod = "Added";
         if (add === undefined || add == null || add) {
-            person.choreList.push(name);
+            person.chores.push(name);
         } else {
             mod = "Removed"
-            const idx = person.choreList.indexOf(name);
-            if (idx !== -1) person.choreList.splice(idx); 
+            const idx = person.chores.indexOf(name);
+            if (idx !== -1) person.chores.splice(idx); 
         }
 
         interaction.reply({
