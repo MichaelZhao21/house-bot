@@ -29,6 +29,7 @@ dayjs.extend(customParseFormat);
 dayjs.extend(objectSupport);
 
 // TEMP: Disable strike system here!! (set to false if you want to use it)
+// Note that this will also clear the chores for all users at the end of each week
 const DISABLE_STRIKES = true;
 
 /**
@@ -119,7 +120,11 @@ async function assignChoresAndNotifs(guild, db, settings) {
     users.forEach((u) => {
         // Assign chore
         const number = (u.number + settings.weekCount) % total;
-        u.chores.push(...choreAss[number]);
+        if (DISABLE_STRIKES) {
+            u.chores = choreAss[number];
+        } else {
+            u.chores.push(...choreAss[number]);
+        }
 
         // Clean choresDone array
         u.choresDone = [];
